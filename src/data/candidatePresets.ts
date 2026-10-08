@@ -308,10 +308,58 @@ Documented Platforms & Experience:
       tools: ["Jira", "Postman", "Figma", "Stripe Dashboard", "Mautic", "Notion"],
       domains: ["B2B SaaS", "CRM", "Managed Marketplaces", "Healthcare Operations", "Video Collaboration"],
       certifications: [
-        { id: "cert_pm_1", name: "Certified Scrum Product Owner (CSPO)", issuingOrganization: "Scrum Alliance", dateObtained: "2021", status: "ACTIVE" }
+        { 
+          id: "cert_pm_1", 
+          name: "Certified Scrum Product Owner (CSPO)", 
+          certificationName: "Certified Scrum Product Owner (CSPO)",
+          issuingOrganization: "Scrum Alliance", 
+          issuer: "Scrum Alliance",
+          issueDate: "2021-08-15",
+          dateObtained: "2021", 
+          credentialId: "CSPO-984210",
+          credentialUrl: "https://scrumalliance.org/community/profile/alex-vance",
+          supportingEvidence: "Official Scrum Alliance verification credential",
+          notes: "Active credential in agile lifecycle management",
+          status: "ACTIVE" 
+        }
       ],
       education: [
-        { id: "edu_pm_1", qualification: "Bachelor of Science", degree: "B.Sc.", fieldOfStudy: "Information Systems", institution: "University of Lagos", startDate: "2016", endDate: "2020", year: "2020", location: "Lagos, Nigeria" }
+        { 
+          id: "edu_pm_1", 
+          qualification: "Bachelor of Science", 
+          degree: "B.Sc.", 
+          fieldOfStudy: "Information Systems", 
+          institution: "University of Lagos", 
+          startDate: "2016-09", 
+          endDate: "2020-07", 
+          year: "2020", 
+          location: "Lagos, Nigeria",
+          grade: "First Class Honours (4.72 / 5.00)",
+          description: "Specialized in Distributed Software Architecture, Database Systems, and Systems Analysis.",
+          supportingEvidence: "Certified academic degree certificate and transcript"
+        }
+      ],
+      portfolio: [
+        {
+          id: "port_pm_1",
+          title: "MarketGrowthOS 16-State CRM Specification & State Machine",
+          description: "Complete architectural state machine specification, multi-tenant isolation model, and 1,200-line QA test matrix.",
+          category: "Live Project",
+          url: "https://alexvance.dev/case-studies/marketgrowthos-spec",
+          associatedProject: "MarketGrowthOS",
+          supportingEvidence: "Verified 0-to-1 PRDs and webhook contradiction prevention tests",
+          notes: "Interactive architecture spec and workflow models"
+        },
+        {
+          id: "port_pm_2",
+          title: "Zenith Property Repairs: Two-Sided Marketplace & Escrow System",
+          description: "Comprehensive product breakdown of 5-stage project lifecycle, contractor vetting logic, and Stripe Connect payout workflows.",
+          category: "Case Study",
+          url: "https://alexvance.dev/case-studies/zenith-repairs-escrow",
+          associatedProject: "Zenith Property Repairs",
+          supportingEvidence: "Documented milestone verification and payout infrastructure",
+          notes: "Detailed case study with workflow diagrams"
+        }
       ],
       personalDetails: {
         fullName: "Alex Vance",
@@ -673,6 +721,17 @@ Strict Boundaries:
       education: [
         { id: "edu_rn_1", qualification: "Bachelor of Science in Nursing", degree: "BSN", fieldOfStudy: "Nursing Science", institution: "University College Hospital", startDate: "2016", endDate: "2020", year: "2020", location: "Ibadan, Nigeria" }
       ],
+      portfolio: [
+        {
+          id: "port_rn_1",
+          title: "Intensive Care Unit Ventilator Protocol & Sepsis Pathway Audit",
+          description: "Clinical documentation and outcome audit measuring zero adverse events and reduced antibiotic intervals.",
+          category: "Case Study",
+          url: "https://clinicalnursingportfolios.org/sarah-chen-icu-audit",
+          supportingEvidence: "Hospital clinical quality audit report",
+          notes: "Peer-reviewed internal departmental presentation"
+        }
+      ],
       personalDetails: {
         fullName: "Sarah Chen, BSN, RN",
         preferredName: "Sarah",
@@ -977,6 +1036,18 @@ Employment:
       ],
       education: [
         { id: "edu_swe_1", qualification: "Bachelor of Science", degree: "B.Sc.", fieldOfStudy: "Computer Science", institution: "University of Lagos", startDate: "2015", endDate: "2019", year: "2019", location: "Lagos, Nigeria" }
+      ],
+      portfolio: [
+        {
+          id: "port_swe_1",
+          title: "Distributed Redis Lock & Idempotent Webhook Engine",
+          description: "Open-source high-throughput webhook delivery engine handling 500+ req/sec with guaranteed at-least-once delivery.",
+          category: "Open Source",
+          url: "https://github.com/davidoladipo-dev/redis-distributed-lock-engine",
+          associatedProject: "PaySync Core Engine",
+          supportingEvidence: "GitHub repository with automated benchmark tests and docs",
+          notes: "Production benchmark tests and architecture diagrams included"
+        }
       ],
       personalDetails: {
         fullName: "David Oladipo",

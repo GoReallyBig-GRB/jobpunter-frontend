@@ -241,8 +241,8 @@ export interface CandidatePersonalDetails {
   preferredName?: string;
   email: string;
   phone?: string;
-  city: string;
-  country: string;
+  city?: string;
+  country?: string;
   linkedIn?: string;
   gitHub?: string;
   portfolio?: string;
@@ -264,7 +264,7 @@ export interface CandidatePersonalDetails {
 export interface EducationRecord {
   id?: string;
   institution: string;
-  qualification?: string;
+  qualification: string;
   fieldOfStudy?: string;
   specialization?: string;
   startDate?: string;
@@ -272,6 +272,9 @@ export interface EducationRecord {
   year?: string; // legacy compatibility
   degree?: string; // legacy compatibility
   location?: string;
+  grade?: string; // Grade / Result where relevant
+  description?: string;
+  supportingEvidence?: string; // Optional supporting evidence / source
   relevantCoursework?: string[];
   academicDistinctions?: string[];
 }
@@ -279,15 +282,34 @@ export interface EducationRecord {
 export interface CertificationRecord {
   id?: string;
   name: string;
-  issuingOrganization?: string;
+  certificationName?: string; // Section 2 alias
+  issuingOrganization: string;
   issuer?: string; // legacy compatibility
+  issueDate?: string;
   dateObtained?: string;
   date?: string; // legacy compatibility
   expirationDate?: string;
-  credentialReference?: string;
-  verificationUrl?: string;
+  expiryDate?: string; // Section 2 alias
+  credentialId?: string; // credential ID where applicable
+  credentialReference?: string; // legacy alias
+  credentialUrl?: string; // credential URL (rendered as clickable link)
+  verificationUrl?: string; // legacy alias
+  supportingEvidence?: string;
+  notes?: string;
   status?: 'ACTIVE' | 'EXPIRED' | 'IN_PROGRESS';
   valid?: boolean; // legacy compatibility
+}
+
+export interface PortfolioRecord {
+  id: string;
+  title: string;
+  name?: string; // Section 2 alias
+  description: string;
+  category: 'Live Project' | 'Web Application' | 'Case Study' | 'Open Source' | 'Design System' | 'Technical Article' | 'Publication' | 'Patent' | 'Other';
+  url: string; // Stored and rendered as clickable hyperlink
+  associatedProject?: string; // Associated project / product / experience
+  supportingEvidence?: string;
+  notes?: string;
 }
 
 export interface IndustryDomainRecord {
@@ -506,6 +528,7 @@ export interface MasterCareerProfile {
     personalDetails?: CandidatePersonalDetails;
     education: EducationRecord[];
     certifications: CertificationRecord[];
+    portfolio?: PortfolioRecord[];
     industryDomains?: IndustryDomainRecord[];
     employmentHistory: EmploymentRecord[];
     currentWork?: CurrentWorkRecord[];
@@ -520,6 +543,9 @@ export interface MasterCareerProfile {
     claimsDiscipline?: ClaimsDiscipline;
     strictBoundaries: string[];
   };
+  lastModifiedAt?: string;
+  derivedMaterialsOutdated?: boolean;
+  materialsOutdatedReason?: string;
   updatedAt: string;
 }
 
@@ -654,6 +680,76 @@ export interface AITaskLogEntry {
   latencyMs: number;
   status: 'SUCCESS' | 'FALLBACK' | 'ERROR';
   details?: string;
+  taskVersion?: number;
+}
+
+export type AITaskId = 
+  | 'master_cv_generation'
+  | 'cv_variant_generation'
+  | 'tailored_cv_generation'
+  | 'candidate_profile_extraction'
+  | 'cv_extraction'
+  | 'dossier_extraction'
+  | 'document_parsing'
+  | 'jd_extraction'
+  | 'requirement_extraction'
+  | 'requirement_classification'
+  | 'job_evaluation'
+  | 'semantic_matching'
+  | 'transferability_analysis'
+  | 'career_pathway_suggestions'
+  | 'cover_letter_generation'
+  | 'application_qa_generation'
+  | 'email_job_extraction';
+
+export interface AITaskVersion {
+  version: number;
+  createdAt: string;
+  systemPrompt: string;
+  taskInstructions: string;
+  assignedModel: string;
+  temperature: number;
+  notes?: string;
+}
+
+export interface AITaskConfig {
+  id: string;
+  taskId: AITaskId;
+  name: string;
+  description: string;
+  purpose: string;
+  permittedInputs: string[];
+  expectedOutput: string;
+  factualGroundingRules: string[];
+  validationRequirements: string[];
+  systemPrompt: string;
+  taskInstructions: string;
+  assignedModel: string;
+  fallbackModel: string;
+  temperature: number;
+  enabled: boolean;
+  activeVersion: number;
+  versionHistory: AITaskVersion[];
+}
+
+export type IntegrationStatus = 
+  | 'CONFIGURED'
+  | 'CONNECTED'
+  | 'OPERATIONAL'
+  | 'UNAVAILABLE'
+  | 'REQUIRES_AUTH'
+  | 'UNSUPPORTED';
+
+export interface IntegrationConfig {
+  id: string;
+  name: string;
+  category: 'EMAIL' | 'STORAGE' | 'AI_PROVIDER' | 'SPREADSHEET' | 'JOB_BOARD' | 'SYSTEM';
+  status: IntegrationStatus;
+  description: string;
+  endpointOrAccount?: string;
+  lastChecked?: string;
+  authScopes?: string[];
+  statusMessage?: string;
 }
 
 // Full Job entity

@@ -18,6 +18,7 @@ import {
   Check,
   Edit3
 } from 'lucide-react';
+import { DocumentEditor } from './DocumentEditor';
 
 interface ReadyToApplyViewProps {
   onOpenJobDetail: (id: string) => void;
@@ -268,13 +269,13 @@ export const ReadyToApplyView: React.FC<ReadyToApplyViewProps> = ({
             </p>
           </div>
 
-          {/* Section 27: One-Time Job-Specific ATS CV Layer */}
+          {/* Tailored ATS Application CV */}
           <div className="p-5 bg-purple-50/60 rounded-lg border border-purple-200 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-purple-950 font-mono flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-purple-600" />
-                  One-Time Job-Specific ATS CV (Section 27)
+                  Tailored ATS Application CV
                 </h3>
                 <p className="text-[11px] text-purple-800 mt-0.5">
                   Tailors terminology and ordering to {currentJob.company}&apos;s JD without modifying the source CV variant or inventing qualifications.
@@ -294,65 +295,15 @@ export const ReadyToApplyView: React.FC<ReadyToApplyViewProps> = ({
             </div>
 
             {currentJob.jobSpecificCV && (
-              <div className="bg-white p-4 rounded border border-purple-200 space-y-3 text-xs">
+              <div className="bg-white p-4 rounded-lg border border-purple-200 space-y-4 text-xs">
                 <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
                   <span className="font-semibold text-zinc-900 flex items-center gap-1.5 text-xs">
                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
                     Zero Unsupported Claims Verified (Master Profile Grounded)
                   </span>
-                  <div className="flex items-center gap-2">
-                    {isEditingATSContent ? (
-                      <button
-                        onClick={() => {
-                          if (currentJob.jobSpecificCV) {
-                            currentJob.jobSpecificCV.tailoredContent = atsContentEdit;
-                          }
-                          setIsEditingATSContent(false);
-                        }}
-                        className="px-2.5 py-1 text-xs font-semibold bg-zinc-900 text-white rounded"
-                      >
-                        Save
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setAtsContentEdit(currentJob.jobSpecificCV!.tailoredContent);
-                          setIsEditingATSContent(true);
-                        }}
-                        className="px-2.5 py-1 text-xs font-semibold bg-white border border-zinc-300 text-zinc-700 rounded hover:bg-zinc-50 flex items-center gap-1"
-                      >
-                        <Edit3 className="w-3 h-3" />
-                        <span>Edit</span>
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => handleCopy(isEditingATSContent ? atsContentEdit : currentJob.jobSpecificCV!.tailoredContent, 'ats_cv')}
-                      className="px-2.5 py-1 text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded flex items-center gap-1"
-                    >
-                      <Copy className="w-3 h-3" />
-                      <span>{copiedSection === 'ats_cv' ? 'Copied' : 'Copy'}</span>
-                    </button>
-                    <button
-                      onClick={() => handleDownloadCVDocx(currentJob.jobSpecificCV!)}
-                      className="px-2.5 py-1 text-xs font-semibold bg-blue-100 hover:bg-blue-200 text-blue-900 rounded flex items-center gap-1"
-                      title="Download formatted DOCX"
-                    >
-                      <Download className="w-3 h-3" />
-                      <span>DOCX</span>
-                    </button>
-                    <button
-                      onClick={() => handleDownloadCVPdf(currentJob.jobSpecificCV!)}
-                      className="px-2.5 py-1 text-xs font-semibold bg-red-100 hover:bg-red-200 text-red-900 rounded flex items-center gap-1"
-                      title="Download formatted PDF"
-                    >
-                      <Download className="w-3 h-3" />
-                      <span>PDF</span>
-                    </button>
-                  </div>
                 </div>
 
-                <div className="bg-zinc-50 p-2.5 rounded text-[11px] space-y-1">
+                <div className="bg-zinc-50 p-2.5 rounded text-[11px] space-y-1 border border-zinc-100">
                   <strong className="text-zinc-800 block">Changes Made / ATS Optimizations:</strong>
                   <ul className="list-disc list-inside text-zinc-600 space-y-0.5">
                     {currentJob.jobSpecificCV.changesMade.map((ch, i) => (
@@ -368,18 +319,17 @@ export const ReadyToApplyView: React.FC<ReadyToApplyViewProps> = ({
                   </p>
                 </div>
 
-                {isEditingATSContent ? (
-                  <textarea
-                    rows={14}
-                    value={atsContentEdit}
-                    onChange={(e) => setAtsContentEdit(e.target.value)}
-                    className="w-full text-xs font-mono p-3 bg-zinc-50 border border-zinc-300 rounded focus:outline-none"
-                  />
-                ) : (
-                  <div className="max-h-60 overflow-y-auto bg-zinc-950 text-zinc-100 p-3 rounded font-mono text-[11px] whitespace-pre-wrap leading-relaxed">
-                    {currentJob.jobSpecificCV.tailoredContent}
-                  </div>
-                )}
+                {/* Real Universal Document Editor for ATS CV */}
+                <DocumentEditor
+                  initialContent={currentJob.jobSpecificCV.tailoredContent}
+                  documentTitle={`${currentJob.company.replace(/\s+/g, '_')}_${masterProfile.candidateName.replace(/\s+/g, '_')}_ATS_CV`}
+                  candidateName={masterProfile.candidateName}
+                  onSave={(updatedMarkdown) => {
+                    if (currentJob.jobSpecificCV) {
+                      currentJob.jobSpecificCV.tailoredContent = updatedMarkdown;
+                    }
+                  }}
+                />
               </div>
             )}
           </div>
@@ -484,13 +434,13 @@ export const ReadyToApplyView: React.FC<ReadyToApplyViewProps> = ({
             </div>
           )}
 
-          {/* Section 33: Application Package Audit & Grounding Verification */}
+          {/* Application Package Audit & Grounding Verification */}
           <div className="p-4 bg-emerald-50/60 rounded-lg border border-emerald-200 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-emerald-200">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-700" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-950 font-mono">
-                  Application Package Audit &amp; Claims Discipline (Part H)
+                  Application Integrity Audit &amp; Verification
                 </h3>
               </div>
               <span className="text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded border border-emerald-300">

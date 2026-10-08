@@ -19,6 +19,7 @@ import { EvidenceLibraryView } from './components/EvidenceLibraryView';
 import { JobDetailModal } from './components/JobDetailModal';
 import { IngestModal } from './components/IngestModal';
 import { DocumentIngestModal } from './components/DocumentIngestModal';
+import { AdminPanelView } from './components/AdminPanelView';
 
 function AppContent() {
   const { masterProfile } = useJobs();
@@ -77,8 +78,10 @@ function AppContent() {
         return { title: 'AI Providers & Model Registry', subtitle: 'True provider abstraction with task-level routing across Google, OpenAI, Anthropic' };
       case 'settings':
         return { title: 'System Settings', subtitle: 'Apply-gate thresholds, Nigeria/Remote compliance, and operational rules' };
+      case 'admin':
+        return { title: 'System Administration Control Plane', subtitle: 'AI task governance, prompt instructions, model routing, and integration control' };
       default:
-        return { title: 'Zero-Cost Job Hunter', subtitle: 'Precision over volume' };
+        return { title: 'JobPunter', subtitle: 'Precision Opportunity & Application Engine' };
     }
   };
 
@@ -193,12 +196,16 @@ function AppContent() {
           {activeTab === 'settings' && (
             <SettingsView />
           )}
+
+          {activeTab === 'admin' && (
+            <AdminPanelView onCloseAdmin={() => setActiveTab('dashboard')} />
+          )}
         </main>
 
         {/* Footer info */}
         <footer className="bg-white border-t border-zinc-200 py-3 px-6 text-xs text-zinc-500 font-mono flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl w-full mx-auto">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-zinc-700">Zero-Cost Job Hunter</span>
+            <span className="font-semibold text-zinc-700">JobPunter</span>
             <span>&middot;</span>
             <span>AI Interprets · Evidence Supports · Rules Decide · Candidate in Control</span>
           </div>

@@ -524,7 +524,7 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onOpenJobDetail })
             <div className="flex items-center justify-between pb-2 border-b border-zinc-200">
               <span className="text-xs font-mono uppercase tracking-wider text-zinc-700 font-bold flex items-center gap-1.5">
                 <Layers className="w-4 h-4 text-emerald-600" />
-                Explicit Job Discovery &amp; Ingestion Flow (Section 7 Architecture)
+                Automated Job Discovery &amp; Ingestion Flow
               </span>
               <span className="text-[10px] text-zinc-500 font-mono">Guaranteed Idempotent &bull; Single Canonical Job Pool</span>
             </div>

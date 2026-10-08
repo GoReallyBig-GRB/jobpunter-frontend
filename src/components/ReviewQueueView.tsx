@@ -106,7 +106,7 @@ export const ReviewQueueView: React.FC<ReviewQueueViewProps> = ({
               Human Intervention Decision Desk
             </h2>
             <p className="text-xs text-amber-800">
-              Section 15: Single-screen decision desk with requirement-level evidence, gaps, and route audit.
+              Single-screen candidate decision desk with requirement-level evidence, gaps, and route verification.
             </p>
           </div>
         </div>

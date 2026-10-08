@@ -12,8 +12,15 @@ import {
   CareerPathway,
   MasterCV,
   JobSpecificCV,
-  AITaskLogEntry
+  AITaskLogEntry,
+  AITaskConfig,
+  AITaskVersion,
+  IntegrationConfig,
+  IntegrationStatus,
+  ApplicationAuditEntry,
+  DiscoveryScheduleSettings
 } from '../types/job';
+import { INITIAL_AI_TASKS_CONFIG, INITIAL_INTEGRATIONS_CONFIG } from '../data/aiTasksConfig';
 import { getSeedJobs, INITIAL_SOURCE_EMAILS, TEST_SUITE_DEFINITIONS, TestCaseDefinition } from '../data/demoData';
 import { evaluateJob, detectDuplicates, DEFAULT_SETTINGS, RawJobInput } from '../engine/evaluator';
 import { parseJobAlertEmail } from '../engine/emailParser';
@@ -104,6 +111,21 @@ export interface JobContextType {
   generateJobSpecificCVForJob: (jobId: string, variantId?: string) => Promise<JobSpecificCV>;
   reEvaluateJob: (jobId: string) => void;
   reEvaluateAllJobs: () => void;
+
+  // AI Governance & Integrations (Admin Control Plane)
+  aiTasksConfig: AITaskConfig[];
+  updateAITaskConfig: (id: string, updates: Partial<AITaskConfig>, notes?: string) => void;
+  rollbackAITaskConfig: (id: string, versionNumber: number) => void;
+  integrationsConfig: IntegrationConfig[];
+  updateIntegrationStatus: (id: string, status: IntegrationStatus, message?: string) => void;
+
+  // Living Profile Change Tracking
+  derivedMaterialsOutdated: boolean;
+  dismissProfileOutdatedNotice: () => void;
+  updateMasterCVFromProfile: () => Promise<MasterCV>;
+
+  // Manual JD Ingestion
+  ingestManualJD: (rawText: string, defaultSource?: string) => Job;
 }
 
 const JobContext = createContext<JobContextType | undefined>(undefined);
@@ -117,7 +139,10 @@ const STORAGE_KEYS = {
   PREFERENCES: 'zero_cost_preferences_v4',
   PATHWAYS: 'zero_cost_pathways_v4',
   CV_VARIANTS: 'zero_cost_cv_variants_v4',
-  MASTER_CV: 'zero_cost_master_cv_v4'
+  MASTER_CV: 'zero_cost_master_cv_v4',
+  AI_TASKS: 'jobpunter_ai_tasks_v1',
+  INTEGRATIONS: 'jobpunter_integrations_v1',
+  DERIVED_OUTDATED: 'jobpunter_derived_outdated_v1'
 };
 
 export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -196,6 +221,40 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [aiTaskLogs, setAiTaskLogs] = useState<AITaskLogEntry[]>([]);
+
+  // 3. AI Governance & Integrations State
+  const [aiTasksConfig, setAiTasksConfig] = useState<AITaskConfig[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.AI_TASKS);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { console.error(e); }
+    }
+    return INITIAL_AI_TASKS_CONFIG;
+  });
+
+  const [integrationsConfig, setIntegrationsConfig] = useState<IntegrationConfig[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.INTEGRATIONS);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { console.error(e); }
+    }
+    return INITIAL_INTEGRATIONS_CONFIG;
+  });
+
+  const [derivedMaterialsOutdated, setDerivedMaterialsOutdated] = useState<boolean>(() => {
+    return localStorage.getItem(STORAGE_KEYS.DERIVED_OUTDATED) === 'true';
+  });
+
+  // Sync to local storage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.AI_TASKS, JSON.stringify(aiTasksConfig));
+  }, [aiTasksConfig]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.INTEGRATIONS, JSON.stringify(integrationsConfig));
+  }, [integrationsConfig]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.DERIVED_OUTDATED, derivedMaterialsOutdated ? 'true' : 'false');
+  }, [derivedMaterialsOutdated]);
 
   // Sync to local storage
   useEffect(() => {
@@ -334,8 +393,23 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setMasterProfile(prev => ({
       ...prev,
       ...updates,
+      lastModifiedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }));
+    // Section 3: If candidate has derived materials (Master CV / variants), flag as potentially outdated
+    if (masterCV) {
+      setDerivedMaterialsOutdated(true);
+    }
+  };
+
+  const dismissProfileOutdatedNotice = () => {
+    setDerivedMaterialsOutdated(false);
+  };
+
+  const updateMasterCVFromProfile = async (): Promise<MasterCV> => {
+    const mcv = await generateMasterCVWithAI();
+    setDerivedMaterialsOutdated(false);
+    return mcv;
   };
 
   const importProfileDocument = async (
@@ -360,7 +434,14 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updatePreferences = (newPrefs: Partial<JobPreferences>) => {
-    setPreferences(prev => ({ ...prev, ...newPrefs }));
+    setPreferences(prev => {
+      const updated = { ...prev, ...newPrefs };
+      // Section 4: Maximum of 5 target roles / titles
+      if (updated.targetRoles && updated.targetRoles.length > 5) {
+        updated.targetRoles = updated.targetRoles.slice(0, 5);
+      }
+      return updated;
+    });
   };
 
   // -------------------------------------------------------------
@@ -426,12 +507,32 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const variant = await aiProvider.generateCVVariantFromPathway(pathway, masterProfile, settings.taskModels.generationModel);
     variant.pathwayId = pathway.id;
     variant.candidateApproved = true;
-    setCvVariants(prev => [variant, ...prev]);
+    
+    // Section 4: Maximum 5 corresponding CV variants
+    setCvVariants(prev => {
+      const existingIdx = prev.findIndex(v => v.pathwayId === pathway.id || v.userDefinedName === variant.userDefinedName);
+      if (existingIdx >= 0) {
+        const copy = [...prev];
+        copy[existingIdx] = variant;
+        return copy;
+      }
+      if (prev.length >= 5) {
+        // Replace oldest variant to preserve strict max 5 limit
+        return [variant, ...prev.slice(0, 4)];
+      }
+      return [variant, ...prev];
+    });
     return variant;
   };
 
   const addCVVariant = (variant: CVVariant) => {
-    setCvVariants(prev => [variant, ...prev]);
+    // Section 4: Maximum 5 CV variants constraint
+    setCvVariants(prev => {
+      if (prev.length >= 5) {
+        return [variant, ...prev.slice(0, 4)];
+      }
+      return [variant, ...prev];
+    });
   };
 
   const updateCVVariant = (id: string, updates: Partial<CVVariant>) => {
@@ -686,6 +787,171 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setJobs(prev => [evaluated, ...prev]);
     return evaluated;
+  };
+
+  // Section 9: First-Class Manual JD Input Processing
+  const ingestManualJD = (rawText: string, defaultSource: string = 'Manual JD Paste'): Job => {
+    const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+    let title = '';
+    let company = '';
+    let location = 'Remote';
+    let applicationUrl = '';
+    let salary = '';
+
+    for (const line of lines) {
+      if (!title) {
+        const tMatch = line.match(/^(?:job\s+title|title|role|position):\s*(.+)/i);
+        if (tMatch) { title = tMatch[1].trim(); continue; }
+      }
+      if (!company) {
+        const cMatch = line.match(/^(?:company|employer|organisation|organization):\s*(.+)/i);
+        if (cMatch) { company = cMatch[1].trim(); continue; }
+      }
+      if (!location || location === 'Remote') {
+        const lMatch = line.match(/^(?:location|workplace|geography):\s*(.+)/i);
+        if (lMatch) { location = lMatch[1].trim(); continue; }
+      }
+      if (!salary) {
+        const sMatch = line.match(/(?:\$|£|€|₦|\bUSD\b|\bNGN\b)\s*[\d,]+(?:\s*-\s*[\d,]+)?(?:\s*(?:k|per\s+year|\/yr|\/year|\/month|\/mo))?/i);
+        if (sMatch) { salary = sMatch[0].trim(); }
+      }
+      if (!applicationUrl) {
+        const uMatch = line.match(/https?:\/\/[^\s\)]+/i);
+        if (uMatch) { applicationUrl = uMatch[0].trim(); }
+      }
+    }
+
+    if (!title && lines.length > 0) {
+      if (!lines[0].toLowerCase().startsWith('http') && lines[0].length < 70) {
+        title = lines[0].replace(/^#+\s*/, '').trim();
+      }
+    }
+    if (!company && lines.length > 1) {
+      if (lines[1].length < 60 && !lines[1].toLowerCase().startsWith('http')) {
+        company = lines[1].replace(/^(?:at|@)\s*/i, '').trim();
+      }
+    }
+
+    const missingFields: string[] = [];
+    if (!title) missingFields.push('Job Title');
+    if (!company) missingFields.push('Company / Employer');
+    if (!location || location === 'Remote') missingFields.push('Location');
+
+    const rawInput: RawJobInput = {
+      title: title || 'Unspecified Role',
+      company: company || 'Unspecified Employer',
+      location: location || 'Remote (Unspecified)',
+      source: defaultSource,
+      provenanceLabel: 'Manual JD Paste',
+      jobUrl: applicationUrl,
+      applicationUrl,
+      description: rawText.trim()
+    };
+
+    const evaluated = evaluateJob(rawInput, settings, masterProfile, cvVariants, preferences);
+    
+    if (missingFields.length > 0) {
+      evaluated.missingFields = Array.from(new Set([...(evaluated.missingFields || []), ...missingFields]));
+      if (evaluated.decision === 'APPLY') {
+        evaluated.decision = 'REVIEW';
+        evaluated.decisionReason = `Matches core profile but missing details: ${missingFields.join(', ')}. Candidate review required to resolve missing information.`;
+      }
+    }
+
+    const dupCheck = detectDuplicates(evaluated, jobs);
+    let finalJob = evaluated;
+
+    if (dupCheck.isDuplicate && dupCheck.duplicateOf) {
+      const dupId = dupCheck.duplicateOf.id;
+      const now = new Date().toISOString();
+      setJobs(prev => prev.map(j => {
+        if (j.id === dupId) {
+          const sources = Array.from(new Set([...(j.allSources || [j.source]), evaluated.source]));
+          return {
+            ...j,
+            allSources: sources,
+            lastSeen: now,
+            reEncounterCount: (j.reEncounterCount || 1) + 1,
+            notes: (j.notes ? j.notes + ' | ' : '') + `Re-pasted manually on ${now.split('T')[0]}`
+          };
+        }
+        return j;
+      }));
+      finalJob = { ...dupCheck.duplicateOf, isDuplicate: true };
+    } else {
+      setJobs(prev => [evaluated, ...prev]);
+    }
+
+    return finalJob;
+  };
+
+  // AI Task Configuration Governance (Sections 7 & 8)
+  const updateAITaskConfig = (id: string, updates: Partial<AITaskConfig>, notes?: string) => {
+    setAiTasksConfig(prev => prev.map(task => {
+      if (task.id === id) {
+        const newVersionNumber = task.activeVersion + 1;
+        const newVersionRecord: AITaskVersion = {
+          version: newVersionNumber,
+          createdAt: new Date().toISOString(),
+          systemPrompt: updates.systemPrompt ?? task.systemPrompt,
+          taskInstructions: updates.taskInstructions ?? task.taskInstructions,
+          assignedModel: updates.assignedModel ?? task.assignedModel,
+          temperature: updates.temperature ?? task.temperature,
+          notes: notes || `Admin updated to v${newVersionNumber}`
+        };
+        return {
+          ...task,
+          ...updates,
+          activeVersion: newVersionNumber,
+          versionHistory: [newVersionRecord, ...task.versionHistory]
+        };
+      }
+      return task;
+    }));
+  };
+
+  const rollbackAITaskConfig = (id: string, versionNumber: number) => {
+    setAiTasksConfig(prev => prev.map(task => {
+      if (task.id === id) {
+        const targetVersion = task.versionHistory.find(v => v.version === versionNumber);
+        if (targetVersion) {
+          const rollbackRecord: AITaskVersion = {
+            version: task.activeVersion + 1,
+            createdAt: new Date().toISOString(),
+            systemPrompt: targetVersion.systemPrompt,
+            taskInstructions: targetVersion.taskInstructions,
+            assignedModel: targetVersion.assignedModel,
+            temperature: targetVersion.temperature,
+            notes: `Rollback to version ${versionNumber}`
+          };
+          return {
+            ...task,
+            systemPrompt: targetVersion.systemPrompt,
+            taskInstructions: targetVersion.taskInstructions,
+            assignedModel: targetVersion.assignedModel,
+            temperature: targetVersion.temperature,
+            activeVersion: rollbackRecord.version,
+            versionHistory: [rollbackRecord, ...task.versionHistory]
+          };
+        }
+      }
+      return task;
+    }));
+  };
+
+  // Integration Governance (Section 21)
+  const updateIntegrationStatus = (id: string, status: IntegrationStatus, message?: string) => {
+    setIntegrationsConfig(prev => prev.map(integ => {
+      if (integ.id === id) {
+        return {
+          ...integ,
+          status,
+          statusMessage: message || integ.statusMessage,
+          lastChecked: new Date().toISOString()
+        };
+      }
+      return integ;
+    }));
   };
 
   const ingestEmailAlert = (subject: string, content: string, sender: string = 'alerts@jobsource.com') => {
@@ -1015,7 +1281,22 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Application Specific & Re-eval
         generateJobSpecificCVForJob,
         reEvaluateJob,
-        reEvaluateAllJobs
+        reEvaluateAllJobs,
+
+        // AI Governance & Integrations (Admin Control Plane)
+        aiTasksConfig,
+        updateAITaskConfig,
+        rollbackAITaskConfig,
+        integrationsConfig,
+        updateIntegrationStatus,
+
+        // Living Profile Change Tracking
+        derivedMaterialsOutdated,
+        dismissProfileOutdatedNotice,
+        updateMasterCVFromProfile,
+
+        // Manual JD Ingestion
+        ingestManualJD
       }}
     >
       {children}

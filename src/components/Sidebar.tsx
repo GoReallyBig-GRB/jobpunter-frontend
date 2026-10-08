@@ -18,7 +18,9 @@ import {
   Settings,
   ChevronRight,
   ShieldCheck,
-  User
+  User,
+  ShieldAlert,
+  SlidersHorizontal
 } from 'lucide-react';
 
 export type NavTab = 
@@ -37,7 +39,8 @@ export type NavTab =
   | 'health'
   | 'tests'
   | 'ai_providers'
-  | 'settings';
+  | 'settings'
+  | 'admin';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -70,23 +73,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const digestUnparsedCount = sourceEmails.filter(e => e.processedStatus === 'PARSING_REQUIRED').length;
   const appliedCount = jobs.filter(j => ['APPLIED', 'INTERVIEW', 'OFFER'].includes(j.status)).length;
 
-  const groups: NavGroup[] = [
+  const candidateGroups: NavGroup[] = [
     {
-      groupName: 'Overview',
+      groupName: 'OVERVIEW',
       items: [
         { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard }
       ]
     },
     {
-      groupName: 'PROFILE',
+      groupName: 'PROFILE & EVIDENCE',
       items: [
         { id: 'master_profile', label: 'Master Career Profile', icon: User },
         { id: 'cv_library', label: 'CV Studio & Variants', icon: FileText },
-        { id: 'preferences', label: 'Career Preferences', icon: Sliders }
+        { id: 'preferences', label: 'Career Preferences', icon: Sliders },
+        { id: 'evidence_library', label: 'Evidence Library', icon: FolderGit2 },
+        { id: 'health', label: 'Evidence Health', icon: Activity }
       ]
     },
     {
-      groupName: 'JOBS',
+      groupName: 'OPPORTUNITIES',
       items: [
         { 
           id: 'ingestion', 
@@ -123,45 +128,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badgeColor: 'bg-indigo-100 text-indigo-800'
         }
       ]
-    },
-    {
-      groupName: 'EVIDENCE',
-      items: [
-        { id: 'evidence_library', label: 'Evidence Library', icon: FolderGit2 },
-        { id: 'health', label: 'Evidence Health', icon: Activity }
-      ]
-    },
-    {
-      groupName: 'SYSTEM',
-      items: [
-        { id: 'ai_providers', label: 'AI Providers', icon: Cpu },
-        { id: 'tests', label: 'Diagnostics & Test Cases', icon: CheckSquare },
-        { id: 'settings', label: 'System Settings', icon: Settings }
-      ]
     }
   ];
 
   const hasCandidate = masterProfile && masterProfile.candidateName && masterProfile.candidateName.trim().length > 0;
 
   return (
-    <aside className="w-64 bg-zinc-900 text-zinc-300 flex flex-col shrink-0 border-r border-zinc-800 select-none">
+    <aside className="w-64 bg-zinc-900 text-zinc-300 flex flex-col shrink-0 border-r border-zinc-800 select-none h-screen overflow-hidden">
       {/* Brand Header */}
-      <div className="p-4 border-b border-zinc-800/80 flex items-center justify-between">
+      <div className="p-4 border-b border-zinc-800/80 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center justify-center text-emerald-400">
+          <div className="w-8 h-8 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center justify-center text-emerald-400">
             <ShieldCheck className="w-4 h-4" />
           </div>
           <div>
-            <h1 className="text-xs font-bold text-white tracking-wide uppercase">Zero-Cost Job Hunter</h1>
-            <p className="text-[10px] text-zinc-400 font-mono">Precision Career Decision OS</p>
+            <h1 className="text-xs font-bold text-white tracking-wide uppercase">JobPunter</h1>
+            <p className="text-[10px] text-zinc-400 font-mono">Precision Opportunity &amp; Application Engine</p>
           </div>
         </div>
       </div>
 
       {/* Candidate Status Card */}
-      <div className="p-3 border-b border-zinc-800/80 bg-zinc-950/40">
+      <div className="p-3 border-b border-zinc-800/80 bg-zinc-950/40 shrink-0">
         <div className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 mb-1 flex items-center justify-between">
-          <span>Active Candidate</span>
+          <span>Active Profile</span>
           <button 
             onClick={onOpenUploadModal}
             className="text-[10px] text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
@@ -186,9 +176,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      {/* Navigation Links */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4 text-xs font-medium">
-        {groups.map((group) => (
+      {/* Navigation Links with Dedicated Vertical Scrollbar (Section 19) */}
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4 text-xs font-medium scrollbar-thin scrollbar-thumb-zinc-700 hover:scrollbar-thumb-zinc-600">
+        {candidateGroups.map((group) => (
           <div key={group.groupName} className="space-y-1">
             <div className="px-2.5 text-[10px] uppercase font-mono tracking-wider text-zinc-500 font-semibold">
               {group.groupName}
@@ -229,10 +219,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </div>
 
+      {/* Restricted Admin Control Plane (Section 20 & 21) */}
+      <div className="p-3 border-t border-zinc-800 bg-zinc-950/80 shrink-0">
+        <button
+          onClick={() => setActiveTab('admin')}
+          className={`w-full flex items-center justify-between p-2 rounded-lg text-xs font-semibold transition-all ${
+            activeTab === 'admin'
+              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-xs'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 border border-zinc-800'
+          }`}
+          title="Restricted System Control Plane for governing AI tasks, prompts, and integrations"
+        >
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>Admin Control Plane</span>
+          </div>
+          <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+            Control
+          </span>
+        </button>
+      </div>
+
       {/* Footer Info */}
-      <div className="p-3 border-t border-zinc-800/80 text-[10px] font-mono text-zinc-500 flex items-center justify-between">
-        <span>$0 Cloud Fee</span>
-        <span className="text-emerald-400">Deterministic Engine</span>
+      <div className="px-4 py-2 border-t border-zinc-800/60 text-[10px] font-mono text-zinc-500 flex items-center justify-between shrink-0">
+        <span>JobPunter</span>
+        <span className="text-emerald-400 font-semibold">Candidate in Control</span>
       </div>
     </aside>
   );

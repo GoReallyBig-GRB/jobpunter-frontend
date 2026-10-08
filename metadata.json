@@ -1,6 +1,6 @@
 {
-  "name": "Zero-Cost Job Hunter",
-  "description": "Candidate-agnostic, evidence-based job-hunting decision and application preparation system. Precision over volume.",
+  "name": "JobPunter",
+  "description": "Precision job-hunting decision engine and application preparation system. Candidate in control.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

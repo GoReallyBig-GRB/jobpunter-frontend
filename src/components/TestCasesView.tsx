@@ -45,7 +45,7 @@ export const TestCasesView: React.FC<TestCasesViewProps> = ({ onOpenJobDetail })
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 uppercase tracking-wider mb-1">
               <ShieldCheck className="w-4 h-4" />
-              <span>Section 25 Automated Diagnostic Test Suite</span>
+              <span>Automated Decision Engine Test Suite</span>
             </div>
             <h2 className="text-xl font-bold tracking-tight text-white">
               18 Verification Test Cases &amp; Gate Diagnostics

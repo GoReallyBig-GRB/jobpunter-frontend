@@ -255,7 +255,7 @@ export const ApplicationsPipelineView: React.FC<ApplicationsPipelineViewProps> =
               <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg space-y-3">
                 <div className="flex items-center gap-1.5 text-rose-900 font-bold text-xs">
                   <TrendingDown className="w-4 h-4 text-rose-600" />
-                  <span>Loss Analysis &amp; Verifiable Gap Feedback (Section 12)</span>
+                  <span>Outcome Analysis &amp; Verifiable Gap Feedback</span>
                 </div>
                 <p className="text-[11px] text-rose-800 leading-relaxed">
                   Record verifiable feedback to inform future Master Career Profile positioning and CV Variants without guessing.

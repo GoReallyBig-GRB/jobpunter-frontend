@@ -16,16 +16,19 @@ import {
   Layers, 
   Edit3, 
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Target
 } from 'lucide-react';
 import { extractDocumentText } from '../utils/documentExtractor';
 import { parseMarkdownToStructuredCV, generateDocxBlob, generatePdfBlob, downloadBlob } from '../utils/documentExporter';
 import { CareerPathway, CVVariant } from '../types/job';
+import { DocumentEditor } from './DocumentEditor';
 
 export const CVStudioView: React.FC = () => {
   const {
     masterProfile,
     preferences,
+    updatePreferences,
     careerPathways,
     cvVariants,
     masterCV,
@@ -42,11 +45,16 @@ export const CVStudioView: React.FC = () => {
     importCVWithConflictCheck
   } = useJobs();
 
-  const [activeTab, setActiveTab] = useState<'pathways' | 'master_cv' | 'variants'>('pathways');
+  // Section 4: Master CV is the first-class principal document
+  const [activeTab, setActiveTab] = useState<'master_cv' | 'variants' | 'pathways'>('master_cv');
   const [isGeneratingPathways, setIsGeneratingPathways] = useState(false);
   const [isGeneratingMasterCV, setIsGeneratingMasterCV] = useState(false);
   const [isGeneratingVariant, setIsGeneratingVariant] = useState<string | null>(null);
   
+  // Target roles (Maximum 5) management state
+  const [newTargetRole, setNewTargetRole] = useState('');
+  const [showAddRole, setShowAddRole] = useState(false);
+
   // Custom pathway modal / form state
   const [showAddPathway, setShowAddPathway] = useState(false);
   const [newPathwayTitle, setNewPathwayTitle] = useState('');
@@ -234,18 +242,6 @@ export const CVStudioView: React.FC = () => {
       <div className="border-b border-zinc-200 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => setActiveTab('pathways')}
-            className={`px-4 py-2.5 text-xs font-semibold border-b-2 flex items-center gap-2 transition-colors ${
-              activeTab === 'pathways'
-                ? 'border-zinc-900 text-zinc-900'
-                : 'border-transparent text-zinc-500 hover:text-zinc-800'
-            }`}
-          >
-            <Compass className="w-4 h-4 text-emerald-600" />
-            <span>1. Career Pathways ({careerPathways.length})</span>
-          </button>
-
-          <button
             onClick={() => setActiveTab('master_cv')}
             className={`px-4 py-2.5 text-xs font-semibold border-b-2 flex items-center gap-2 transition-colors ${
               activeTab === 'master_cv'
@@ -254,7 +250,7 @@ export const CVStudioView: React.FC = () => {
             }`}
           >
             <FileText className="w-4 h-4 text-blue-600" />
-            <span>2. Master CV (Comprehensive)</span>
+            <span>1. Master CV (Principal Baseline Document)</span>
           </button>
 
           <button
@@ -266,13 +262,250 @@ export const CVStudioView: React.FC = () => {
             }`}
           >
             <Layers className="w-4 h-4 text-purple-600" />
-            <span>3. CV Variant Library ({cvVariants.length})</span>
+            <span>2. Target Roles &amp; CV Variants ({(preferences.targetRoles || []).length}/5)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('pathways')}
+            className={`px-4 py-2.5 text-xs font-semibold border-b-2 flex items-center gap-2 transition-colors ${
+              activeTab === 'pathways'
+                ? 'border-zinc-900 text-zinc-900'
+                : 'border-transparent text-zinc-500 hover:text-zinc-800'
+            }`}
+          >
+            <Compass className="w-4 h-4 text-emerald-600" />
+            <span>3. Career Pathways Discovery ({careerPathways.length})</span>
           </button>
         </div>
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* TAB 1: CAREER PATHWAYS */}
+      {/* TAB 1: MASTER CV (PRINCIPAL BASELINE DOCUMENT) */}
+      {/* ------------------------------------------------------------- */}
+      {activeTab === 'master_cv' && (
+        <div className="space-y-4">
+          <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-zinc-900">Principal Master CV</h3>
+                <span className="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                  Factual Source of Truth Baseline
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Generated directly from your Master Career Profile. Serves as the authoritative baseline from which targeted variants are created.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleGenerateMasterCV}
+                disabled={isGeneratingMasterCV}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-950 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 rounded transition-colors disabled:opacity-50"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <span>{isGeneratingMasterCV ? 'Synthesizing...' : 'Re-Generate from Profile'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Universal Document Editor for Master CV */}
+          <DocumentEditor
+            initialContent={masterCV?.fullMarkdown || masterCVText || `# ${masterProfile.candidateName}\n\n**${masterProfile.primaryProfession}** · ${masterProfile.location}\n\n---\n\n## Professional Summary\n${masterProfile.corePositioning}\n\n---\n\n## Employment History\n${masterProfile.structuredData?.employmentHistory?.map(e => `### ${e.role} — ${e.employer}\n*${e.startDate} – ${e.endDate}*\n\n${e.responsibilities?.map(r => `* ${r}`).join('\n')}`).join('\n\n') || ''}`}
+            documentTitle={`${masterProfile.candidateName || 'Candidate'}_Master_CV`}
+            candidateName={masterProfile.candidateName}
+            onSave={(updatedMarkdown) => {
+              setMasterCVText(updatedMarkdown);
+              updateMasterCV({
+                fullMarkdown: updatedMarkdown,
+                professionalSummary: updatedMarkdown.slice(0, 300)
+              });
+            }}
+          />
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* TAB 2: TARGET ROLES & CV VARIANTS (MAX 5 PAIRS) */}
+      {/* ------------------------------------------------------------- */}
+      {activeTab === 'variants' && (
+        <div className="space-y-6">
+          {/* Target Roles Governance Header */}
+          <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-zinc-900">Target Roles &amp; Corresponding CV Variants</h3>
+                  <span className="text-[10px] font-mono font-bold bg-purple-100 text-purple-800 px-2 py-0.5 rounded">
+                    Max 5 Target Roles + 5 Variants
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Define up to 5 target roles. Each role maps to a dedicated CV variant derived from the Master CV and verified evidence.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {(preferences.targetRoles || []).length < 5 && (
+                  <button
+                    onClick={() => setShowAddRole(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>+ Add Target Role</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-700 bg-white border border-zinc-300 rounded hover:bg-zinc-50 transition-colors"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload Document</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Target Roles Pill List */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-zinc-200">
+              <span className="text-[11px] font-semibold text-zinc-600 font-mono">Defined Target Roles ({(preferences.targetRoles || []).length}/5):</span>
+              {(preferences.targetRoles || []).map((role, idx) => (
+                <div key={idx} className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-zinc-300 rounded-md text-xs shadow-xs">
+                  <Target className="w-3.5 h-3.5 text-purple-600" />
+                  <span className="font-semibold text-zinc-800">{role}</span>
+                  <button
+                    onClick={() => {
+                      const updated = (preferences.targetRoles || []).filter((_, i) => i !== idx);
+                      updatePreferences({ targetRoles: updated });
+                    }}
+                    className="text-zinc-400 hover:text-rose-600 ml-1 p-0.5"
+                    title={`Remove ${role}`}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              {(preferences.targetRoles || []).length === 0 && (
+                <span className="text-xs text-amber-700 italic">No target roles defined yet. Add up to 5 target roles.</span>
+              )}
+            </div>
+
+            {/* Add Role Inline Input */}
+            {showAddRole && (
+              <div className="p-3 bg-white rounded-md border border-purple-200 flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g., Lead Product Manager, Clinical Specialist, Staff Software Engineer..."
+                  value={newTargetRole}
+                  onChange={(e) => setNewTargetRole(e.target.value)}
+                  className="flex-1 text-xs px-3 py-1.5 border border-zinc-300 rounded focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                />
+                <button
+                  onClick={() => {
+                    if (!newTargetRole.trim()) return;
+                    const cur = preferences.targetRoles || [];
+                    if (cur.length < 5) {
+                      updatePreferences({ targetRoles: [...cur, newTargetRole.trim()] });
+                    }
+                    setNewTargetRole('');
+                    setShowAddRole(false);
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold bg-zinc-900 text-white rounded hover:bg-zinc-800"
+                >
+                  Save Role
+                </button>
+                <button
+                  onClick={() => { setShowAddRole(false); setNewTargetRole(''); }}
+                  className="px-3 py-1.5 text-xs text-zinc-600 hover:text-zinc-900"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Variants and Editor Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left: Variants List */}
+            <div className="space-y-3 md:col-span-1">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 font-mono">
+                  CV Variants ({cvVariants.length}/5)
+                </h3>
+              </div>
+
+              <div className="space-y-2">
+                {cvVariants.map(v => {
+                  const isSelected = v.id === selectedVariantId;
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => setSelectedVariantId(v.id)}
+                      className={`w-full text-left p-3 rounded-lg border transition-all ${
+                        isSelected
+                          ? 'bg-zinc-900 text-white border-zinc-900 shadow-xs'
+                          : 'bg-white text-zinc-900 border-zinc-200 hover:bg-zinc-50'
+                      }`}
+                    >
+                      <div className="font-bold text-xs">{v.userDefinedName}</div>
+                      <div className={`text-[10px] mt-0.5 line-clamp-1 ${isSelected ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                        {v.description || v.fileName}
+                      </div>
+                      <div className="flex items-center justify-between gap-2 mt-2">
+                        <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded ${
+                          isSelected ? 'bg-zinc-800 text-emerald-300' : 'bg-zinc-100 text-zinc-600'
+                        }`}>
+                          {v.isActive ? 'Active Variant' : 'Archived'}
+                        </span>
+                        <span className={`text-[9px] font-mono ${isSelected ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                          {v.highlightedSkills?.length || 0} skills spotlighted
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right: Selected Variant Universal Document Editor */}
+            <div className="md:col-span-2 space-y-4">
+              {currentVariant ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-zinc-200">
+                    <div>
+                      <h4 className="text-xs font-bold text-zinc-900">{currentVariant.userDefinedName}</h4>
+                      <p className="text-[10px] text-zinc-500 font-mono">Derived from Master CV &bull; Zero fabrication compliant</p>
+                    </div>
+                    <button
+                      onClick={() => deleteCVVariant(currentVariant.id)}
+                      className="text-xs text-rose-600 hover:text-rose-800 flex items-center gap-1 font-semibold p-1"
+                      title="Delete Variant"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete Variant</span>
+                    </button>
+                  </div>
+
+                  <DocumentEditor
+                    initialContent={currentVariant.rawText}
+                    documentTitle={`${masterProfile.candidateName || 'Candidate'}_${currentVariant.userDefinedName.replace(/\s+/g, '_')}`}
+                    candidateName={masterProfile.candidateName}
+                    onSave={(updatedMarkdown) => {
+                      updateCVVariant(currentVariant.id, { rawText: updatedMarkdown });
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg border border-zinc-200 p-12 text-center text-zinc-500 text-xs space-y-2">
+                  <p className="font-semibold text-zinc-700">No CV Variant Selected</p>
+                  <p>Select a variant from the list or generate one for a defined target role from Career Pathways.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* TAB 3: CAREER PATHWAYS DISCOVERY */}
       {/* ------------------------------------------------------------- */}
       {activeTab === 'pathways' && (
         <div className="space-y-4">
@@ -406,250 +639,6 @@ export const CVStudioView: React.FC = () => {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* ------------------------------------------------------------- */}
-      {/* TAB 2: MASTER CV */}
-      {/* ------------------------------------------------------------- */}
-      {activeTab === 'master_cv' && (
-        <div className="space-y-4">
-          <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h3 className="text-sm font-bold text-zinc-900">Comprehensive Master CV</h3>
-              <p className="text-xs text-zinc-500">
-                A complete, unedited repository of all verified experience and capabilities. Editable and fully controlled by you.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleGenerateMasterCV}
-                disabled={isGeneratingMasterCV}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-950 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 rounded transition-colors disabled:opacity-50"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                <span>{isGeneratingMasterCV ? 'Synthesizing...' : 'Re-Generate from Profile'}</span>
-              </button>
-
-              {isEditingMasterCV ? (
-                <button
-                  onClick={handleSaveMasterCV}
-                  className="px-3 py-1.5 text-xs font-semibold bg-zinc-900 text-white hover:bg-zinc-800 rounded transition-colors"
-                >
-                  Save Changes
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setMasterCVText(masterCV?.fullMarkdown || '');
-                    setIsEditingMasterCV(true);
-                  }}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-white border border-zinc-300 text-zinc-700 hover:bg-zinc-50 rounded transition-colors"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  <span>Edit Markdown</span>
-                </button>
-              )}
-
-              <button
-                onClick={() => handleCopy(masterCVText || masterCV?.fullMarkdown || '', 'mcv')}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-white border border-zinc-300 text-zinc-700 hover:bg-zinc-50 rounded transition-colors"
-              >
-                {copiedKey === 'mcv' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedKey === 'mcv' ? 'Copied' : 'Copy'}</span>
-              </button>
-
-              <button
-                onClick={handleDownloadMasterCVDocx}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 rounded transition-colors"
-                title="Download formatted Microsoft Word .docx"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>DOCX</span>
-              </button>
-
-              <button
-                onClick={handleDownloadMasterCVPdf}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 rounded transition-colors"
-                title="Download formatted Adobe PDF"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>PDF</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg border border-zinc-300 p-6 shadow-xs">
-            {isEditingMasterCV ? (
-              <textarea
-                value={masterCVText}
-                onChange={(e) => setMasterCVText(e.target.value)}
-                rows={22}
-                className="w-full font-mono text-xs p-4 bg-zinc-50 border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-zinc-900"
-              />
-            ) : (
-              <div className="prose prose-xs max-w-none text-zinc-800 font-mono whitespace-pre-wrap leading-relaxed">
-                {masterCV?.fullMarkdown || masterCVText || 'Click "Re-Generate from Profile" to synthesize the initial Master CV.'}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ------------------------------------------------------------- */}
-      {/* TAB 3: CV VARIANT LIBRARY */}
-      {/* ------------------------------------------------------------- */}
-      {activeTab === 'variants' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Left: Variants List */}
-          <div className="space-y-3 md:col-span-1">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 font-mono">
-                Approved CV Variants ({cvVariants.length})
-              </h3>
-              <button
-                onClick={() => setShowUploadModal(true)}
-                className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-semibold"
-              >
-                <Plus className="w-3 h-3" /> Upload
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {cvVariants.map(v => {
-                const isSelected = v.id === selectedVariantId;
-                return (
-                  <button
-                    key={v.id}
-                    onClick={() => setSelectedVariantId(v.id)}
-                    className={`w-full text-left p-3 rounded-lg border transition-all ${
-                      isSelected
-                        ? 'bg-zinc-900 text-white border-zinc-900 shadow-xs'
-                        : 'bg-white text-zinc-900 border-zinc-200 hover:bg-zinc-50'
-                    }`}
-                  >
-                    <div className="font-bold text-xs">{v.userDefinedName}</div>
-                    <div className={`text-[10px] mt-0.5 line-clamp-1 ${isSelected ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                      {v.description || v.fileName}
-                    </div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded ${
-                        isSelected ? 'bg-zinc-800 text-emerald-300' : 'bg-zinc-100 text-zinc-600'
-                      }`}>
-                        {v.isActive ? 'Active' : 'Archived'}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Right: Selected Variant Preview & Details */}
-          <div className="md:col-span-2 bg-white rounded-lg border border-zinc-300 p-5 space-y-4 shadow-xs">
-            {currentVariant ? (
-              <>
-                <div className="flex items-start justify-between border-b border-zinc-200 pb-3">
-                  <div>
-                    <h3 className="text-sm font-bold text-zinc-900">{currentVariant.userDefinedName}</h3>
-                    <p className="text-xs text-zinc-500 mt-0.5 font-mono">{currentVariant.fileName}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {isEditingVariant ? (
-                      <button
-                        onClick={handleSaveVariant}
-                        className="px-3 py-1.5 text-xs font-semibold bg-zinc-900 text-white hover:bg-zinc-800 rounded transition-colors"
-                      >
-                        Save Variant
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setVariantEditText(currentVariant.rawText);
-                          setIsEditingVariant(true);
-                        }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-white border border-zinc-300 text-zinc-700 hover:bg-zinc-50 rounded transition-colors"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                        <span>Edit</span>
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => handleCopy(isEditingVariant ? variantEditText : currentVariant.rawText, 'variant')}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded transition-colors"
-                    >
-                      {copiedKey === 'variant' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copiedKey === 'variant' ? 'Copied' : 'Copy'}</span>
-                    </button>
-
-                    <button
-                      onClick={() => handleDownloadVariantDocx(currentVariant)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 rounded transition-colors"
-                      title="Download formatted Microsoft Word .docx"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>DOCX</span>
-                    </button>
-
-                    <button
-                      onClick={() => handleDownloadVariantPdf(currentVariant)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 rounded transition-colors"
-                      title="Download formatted Adobe PDF"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>PDF</span>
-                    </button>
-
-                    <button
-                      onClick={() => deleteCVVariant(currentVariant.id)}
-                      className="p-1.5 text-zinc-400 hover:text-rose-600 rounded"
-                      title="Delete Variant"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider font-mono block mb-1">
-                      Emphasized Competencies:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {currentVariant.highlightedSkills?.map((s, i) => (
-                        <span key={i} className="text-xs font-mono bg-purple-50 text-purple-800 px-2 py-0.5 rounded border border-purple-200">
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider font-mono block mb-1">
-                      Document Content &amp; Evidence Grounding:
-                    </span>
-                    {isEditingVariant ? (
-                      <textarea
-                        rows={16}
-                        value={variantEditText}
-                        onChange={(e) => setVariantEditText(e.target.value)}
-                        className="w-full font-mono text-xs p-3 bg-zinc-50 border border-zinc-300 rounded focus:outline-none focus:ring-1 focus:ring-zinc-900"
-                      />
-                    ) : (
-                      <div className="bg-zinc-50 p-4 rounded border border-zinc-200 text-xs font-mono text-zinc-800 whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto">
-                        {currentVariant.rawText}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-12 text-zinc-400 text-xs">
-                No CV variants available. Generate one from an approved career pathway or upload an existing document.
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -803,7 +792,7 @@ export const CVStudioView: React.FC = () => {
                 <div className="bg-amber-50 p-3 rounded border border-amber-300 text-amber-900 space-y-1">
                   <div className="font-bold flex items-center gap-1.5 text-xs text-amber-950">
                     <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                    Conflict Detection Warning (Section 15)
+                    Conflict Detection Notice
                   </div>
                   <p className="text-[11px] text-amber-800">
                     This CV mentions items that appear to conflict with your Master Profile boundaries:

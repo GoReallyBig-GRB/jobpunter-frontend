@@ -526,7 +526,7 @@ export const EvidenceLibraryView: React.FC = () => {
         <div className="space-y-6">
           <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-bold text-zinc-900">Candidate Editorial Control Layer (Section 12)</h3>
+              <h3 className="text-sm font-bold text-zinc-900">Candidate Editorial Control &amp; Preferences</h3>
               <p className="text-xs text-zinc-500">
                 You are the editor of your career. Define target roles, industries, exclusions, and terminology rules. AI cannot override these constraints.
               </p>

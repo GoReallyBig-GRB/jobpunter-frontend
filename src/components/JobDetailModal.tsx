@@ -190,19 +190,19 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                 </p>
               </div>
 
-              {/* Core PM Fit vs Domain Fit comparison */}
+              {/* Core Discipline Fit vs Domain Fit comparison */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-md">
                   <div className="flex items-center justify-between pb-1 mb-2 border-b border-zinc-200">
                     <span className="font-bold text-zinc-900 uppercase font-mono text-[11px]">
-                      Core PM Capability Fit
+                      {masterProfile?.primaryProfession || 'Role'} Capability Fit
                     </span>
                     <span className="font-mono font-bold text-sm text-zinc-900">
                       {job.detailedScores?.corePMScore || 0}/100
                     </span>
                   </div>
                   <p className="text-[11px] text-zinc-600 leading-snug">
-                    Evaluates problem decomposition, state machines, squad collaboration, and detailed specification depth.
+                    Evaluates core capabilities, execution depth, operational methodology, and competencies documented in candidate profile.
                   </p>
                 </div>
 
@@ -216,7 +216,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                     </span>
                   </div>
                   <p className="text-[11px] text-zinc-600 leading-snug">
-                    Evaluates documented vertical match (B2B SaaS, CRM, Platform, Marketplace vs unsupported lending / clinical trials).
+                    Evaluates documented vertical experience, regulatory context, industry expertise, and specialized domain requirements.
                   </p>
                 </div>
               </div>
@@ -226,12 +226,12 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                 <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-md space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="font-bold uppercase tracking-wider text-zinc-900 font-mono text-[11px]">
-                      Section 14 Apply Gate Status
+                      Application Criteria Readiness Gate
                     </span>
                     <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${
                       job.applyGate.passed ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900'
                     }`}>
-                      {job.applyGate.passed ? 'ALL 10 CHECKS PASSED' : 'APPLY GATE BLOCKED'}
+                      {job.applyGate.passed ? 'ALL CHECKS PASSED' : 'APPLY GATE BLOCKED'}
                     </span>
                   </div>
 
@@ -370,7 +370,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
               {/* Seniority Analysis */}
               <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-md space-y-3">
                 <span className="font-bold uppercase tracking-wider text-zinc-900 font-mono text-[11px] block">
-                  Responsibility-Based Seniority Evaluation (Section 8)
+                  Seniority &amp; Role Scope Assessment
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
                   <div>
@@ -466,7 +466,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                   <div>
                     <span className="font-bold text-purple-950 font-mono text-xs flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-                      One-Time Job-Specific ATS CV (Section 27)
+                      Tailored ATS Application CV
                     </span>
                     <p className="text-[11px] text-purple-800 mt-0.5">
                       Optimized for {job.company}&apos;s ATS without modifying source CV variant.

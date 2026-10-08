@@ -28,7 +28,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenJobDetail,
   onOpenIngestModal
 }) => {
-  const { jobs, sourceEmails } = useJobs();
+  const { jobs, sourceEmails, masterProfile } = useJobs();
 
   // Metrics
   const totalDiscovered = jobs.length;
@@ -90,7 +90,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 uppercase tracking-wider mb-1">
-              <span>Section 1 Governing Principle</span>
+              <span>Governing Principle</span>
               <span className="text-zinc-600">·</span>
               <span>Evidence-Backed Verification</span>
             </div>
@@ -98,7 +98,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               &ldquo;Is this job genuinely worth this candidate&apos;s limited application time based on documented evidence?&rdquo;
             </p>
             <p className="text-xs text-zinc-400 mt-1 max-w-2xl">
-              Strict personal screener: Answers based on verifiable product specifications in MarketGrowthOS, NexaLife Care, UrCalls, and Zenith Property Repairs. Never manufactures a fit.
+              Strict personal screener: Evaluated based on verifiable evidence in {masterProfile?.candidateName || "the candidate's"} Master Career Profile. Never manufactures an ungrounded fit.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
