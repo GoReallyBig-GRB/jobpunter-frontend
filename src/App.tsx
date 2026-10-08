@@ -20,6 +20,7 @@ import { JobDetailModal } from './components/JobDetailModal';
 import { IngestModal } from './components/IngestModal';
 import { DocumentIngestModal } from './components/DocumentIngestModal';
 import { AdminPanelView } from './components/AdminPanelView';
+import { GoogleWorkspaceView } from './components/GoogleWorkspaceView';
 
 function AppContent() {
   const { masterProfile } = useJobs();
@@ -78,6 +79,8 @@ function AppContent() {
         return { title: 'AI Providers & Model Registry', subtitle: 'True provider abstraction with task-level routing across Google, OpenAI, Anthropic' };
       case 'settings':
         return { title: 'System Settings', subtitle: 'Apply-gate thresholds, Nigeria/Remote compliance, and operational rules' };
+      case 'google_workspace':
+        return { title: 'Google Workspace Ecosystem & Firebase Cloud', subtitle: 'Google Drive, Gmail Job Alerts, Google Calendar, Google Tasks & Firestore' };
       case 'admin':
         return { title: 'System Administration Control Plane', subtitle: 'AI task governance, prompt instructions, model routing, and integration control' };
       default:
@@ -102,6 +105,7 @@ function AppContent() {
         <Header
           onOpenIngestModal={() => setIsIngestModalOpen(true)}
           onOpenUploadModal={() => setIsDocumentUploadOpen(true)}
+          onOpenWorkspace={() => setActiveTab('google_workspace')}
           title={title}
           subtitle={subtitle}
         />
@@ -195,6 +199,10 @@ function AppContent() {
 
           {activeTab === 'settings' && (
             <SettingsView />
+          )}
+
+          {activeTab === 'google_workspace' && (
+            <GoogleWorkspaceView />
           )}
 
           {activeTab === 'admin' && (

@@ -20,7 +20,8 @@ import {
   ShieldCheck,
   User,
   ShieldAlert,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Cloud
 } from 'lucide-react';
 
 export type NavTab = 
@@ -39,6 +40,7 @@ export type NavTab =
   | 'health'
   | 'tests'
   | 'ai_providers'
+  | 'google_workspace'
   | 'settings'
   | 'admin';
 
@@ -126,6 +128,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: Layers,
           badge: appliedCount > 0 ? appliedCount : undefined,
           badgeColor: 'bg-indigo-100 text-indigo-800'
+        }
+      ]
+    },
+    {
+      groupName: 'WORKSPACE & CLOUD',
+      items: [
+        { 
+          id: 'google_workspace', 
+          label: 'Google Workspace & Cloud', 
+          icon: Cloud 
         }
       ]
     }

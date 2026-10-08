@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "Job": {
+      "title": "Job",
+      "description": "A job opportunity tracked by the candidate",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique job identifier" },
+        "title": { "type": "string", "description": "Job title" },
+        "company": { "type": "string", "description": "Hiring company name" },
+        "location": { "type": "string", "description": "Job location" },
+        "status": { "type": "string", "description": "Current status in pipeline" },
+        "decision": { "type": "string", "description": "Evaluator decision (APPLY, REVIEW, REJECT, ARCHIVED)" },
+        "score": { "type": "number", "description": "Overall fit score between 0 and 100" },
+        "decisiveReason": { "type": "string", "description": "Primary rationale behind evaluation" },
+        "url": { "type": "string", "description": "Application or posting URL" },
+        "notes": { "type": "string", "description": "Candidate editorial notes" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Ingestion timestamp" }
+      },
+      "required": ["id", "title", "company", "status", "decision"]
+    },
+    "MasterProfile": {
+      "title": "MasterProfile",
+      "description": "Candidate Master Career Profile",
+      "type": "object",
+      "properties": {
+        "candidateName": { "type": "string", "description": "Full name of candidate" },
+        "primaryProfession": { "type": "string", "description": "Candidate primary profession" },
+        "email": { "type": "string", "description": "Candidate email address" },
+        "phone": { "type": "string", "description": "Candidate phone number" },
+        "location": { "type": "string", "description": "Candidate current location" },
+        "professionalSummary": { "type": "string", "description": "Comprehensive summary of experience" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last updated timestamp" }
+      },
+      "required": ["candidateName", "primaryProfession"]
+    },
+    "JobPreference": {
+      "title": "JobPreference",
+      "description": "Candidate job search criteria and thresholds",
+      "type": "object",
+      "properties": {
+        "targetRoles": { "type": "string", "description": "Comma separated or JSON string of target roles" },
+        "minimumBaseSalary": { "type": "number", "description": "Minimum acceptable base salary" },
+        "salaryCurrency": { "type": "string", "description": "Preferred salary currency" },
+        "remoteOnly": { "type": "boolean", "description": "Whether only remote positions are accepted" },
+        "minFitScore": { "type": "number", "description": "Minimum threshold score to recommend APPLY" }
+      }
+    },
+    "CVVariant": {
+      "title": "CVVariant",
+      "description": "A tailored variant of the candidate CV",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Variant ID" },
+        "name": { "type": "string", "description": "Variant title or target role" },
+        "targetRole": { "type": "string", "description": "Target job title" },
+        "rawText": { "type": "string", "description": "Markdown formatted CV content" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["id", "name", "targetRole", "rawText"]
+    },
+    "CalendarEventLink": {
+      "title": "CalendarEventLink",
+      "description": "Interview or milestone linked to Google Calendar",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Event reference ID" },
+        "jobId": { "type": "string", "description": "Associated job ID" },
+        "googleEventId": { "type": "string", "description": "Google Calendar event ID" },
+        "title": { "type": "string", "description": "Event title" },
+        "startTime": { "type": "string", "format": "date-time", "description": "Scheduled start time" },
+        "endTime": { "type": "string", "format": "date-time", "description": "Scheduled end time" }
+      },
+      "required": ["id", "jobId", "googleEventId", "title"]
+    },
+    "GoogleTaskLink": {
+      "title": "GoogleTaskLink",
+      "description": "Action item or follow-up linked to Google Tasks",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Task reference ID" },
+        "jobId": { "type": "string", "description": "Associated job ID" },
+        "googleTaskId": { "type": "string", "description": "Google Tasks task ID" },
+        "title": { "type": "string", "description": "Task title" },
+        "dueDate": { "type": "string", "format": "date-time", "description": "Task due date" },
+        "status": { "type": "string", "description": "Status (needsAction, completed)" }
+      },
+      "required": ["id", "jobId", "googleTaskId", "title"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/jobs/{jobId}": {
+      "schema": "Job",
+      "description": "User tracked jobs and scoring"
+    },
+    "/users/{userId}/profile/{profileId}": {
+      "schema": "MasterProfile",
+      "description": "User Master Career Profile"
+    },
+    "/users/{userId}/preferences/{prefId}": {
+      "schema": "JobPreference",
+      "description": "User job search preferences"
+    },
+    "/users/{userId}/variants/{variantId}": {
+      "schema": "CVVariant",
+      "description": "User tailored CV variants"
+    },
+    "/users/{userId}/calendar_events/{eventId}": {
+      "schema": "CalendarEventLink",
+      "description": "Calendar events linked to applications"
+    },
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": "GoogleTaskLink",
+      "description": "Tasks linked to job follow-ups"
+    }
+  }
+}

@@ -10,12 +10,14 @@ import {
   MapPin, 
   Layers,
   Sparkles,
-  FileCheck
+  FileCheck,
+  Cloud
 } from 'lucide-react';
 
 interface HeaderProps {
   onOpenIngestModal: () => void;
   onOpenUploadModal: () => void;
+  onOpenWorkspace?: () => void;
   title?: string;
   subtitle?: string;
 }
@@ -23,6 +25,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   onOpenIngestModal,
   onOpenUploadModal,
+  onOpenWorkspace,
   title = 'Master Career Profile',
   subtitle
 }) => {
@@ -89,6 +92,18 @@ export const Header: React.FC<HeaderProps> = ({
           <Upload className="w-3.5 h-3.5 text-zinc-600" />
           <span>Upload File</span>
         </button>
+
+        {/* Google Workspace & Cloud button */}
+        {onOpenWorkspace && (
+          <button
+            onClick={onOpenWorkspace}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg font-medium border border-blue-200 transition-colors cursor-pointer"
+            title="Google Drive, Gmail, Calendar, Tasks & Firebase Cloud"
+          >
+            <Cloud className="w-3.5 h-3.5 text-blue-600" />
+            <span>Workspace</span>
+          </button>
+        )}
 
         {/* Ingest Job Alert Button */}
         <button
