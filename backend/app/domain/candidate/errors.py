@@ -1,2 +1,0 @@
-class InvalidEvidenceTransition(ValueError):
-    pass
