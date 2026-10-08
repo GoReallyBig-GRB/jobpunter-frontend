@@ -1,0 +1,6 @@
+{
+  "name": "Zero-Cost Job Hunter",
+  "description": "Candidate-agnostic, evidence-based job-hunting decision and application preparation system. Precision over volume.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
