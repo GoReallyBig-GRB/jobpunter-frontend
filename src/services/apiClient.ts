@@ -1,6 +1,6 @@
 import { auth } from './firebase';
 
-const API_BASE_URL = (import.meta.env.VITE_JOBPUNTER_API_BASE_URL || '')
+const API_BASE_URL = (process.env.NEXT_PUBLIC_JOBPUNTER_API_BASE_URL || '')
   .trim()
   .replace(/\/+$/, '');
 
@@ -27,7 +27,7 @@ export async function apiRequest<T>(
   init: RequestInit = {}
 ): Promise<T> {
   if (!API_BASE_URL) {
-    throw new Error('Backend API is not configured. Set VITE_JOBPUNTER_API_BASE_URL.');
+    throw new Error('Backend API is not configured. Set NEXT_PUBLIC_JOBPUNTER_API_BASE_URL.');
   }
 
   if (!path.startsWith('/') || path.startsWith('//')) {

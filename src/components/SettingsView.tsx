@@ -1,336 +1,106 @@
 import React, { useState } from 'react';
 import { useJobs } from '../context/JobContext';
-import { 
-  Sliders, 
-  ShieldCheck, 
-  RotateCcw, 
-  Trash2, 
-  Download, 
-  CheckCircle2, 
-  AlertCircle,
-  Cpu,
-  Key,
-  Activity,
-  UserCheck,
-  RefreshCw,
-  ExternalLink
-} from 'lucide-react';
-import { aiProvider } from '../engine/aiProvider';
-import { providerManager } from '../engine/providers/providerManager';
-import { AIModelDefinition } from '../types/ai';
+import { Sliders, RotateCcw, Trash2, Download, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
-  const { 
-    settings, 
-    updateSettings, 
-    resetToDemoData, 
-    clearAllData, 
-    exportCSV, 
-    exportJSON,
-    activePresetId,
-    candidatePresets,
-    switchCandidatePreset,
-    reEvaluateAllJobs,
-    aiTaskLogs
+  const {
+    settings,
+    updateSettings,
+    resetToDemoData,
+    clearAllData,
+    exportCSV,
+    exportJSON
   } = useJobs();
 
-  const [minApply, setMinApply] = useState(settings.minApplyScore);
-  const [minReview, setMinReview] = useState(settings.minReviewScore);
   const [targetLocation, setTargetLocation] = useState(settings.targetLocation);
   const [rejectPaid, setRejectPaid] = useState(settings.rejectPaidApplications);
-  const [useAI, setUseAI] = useState(settings.useAIInterpretation);
-
-  // Multi-Model Configuration (Section 29 & 30)
-  const availableModels = providerManager.getModels().map(m => ({
-    id: m.modelId,
-    label: `${m.displayName} (${m.provider}) - ${m.costCategory.toUpperCase()}`
-  }));
-
-  const [extractionModel, setExtractionModel] = useState(settings.taskModels.extractionModel || availableModels[0]?.id || 'gemini-2.5-flash');
-  const [matchingModel, setMatchingModel] = useState(settings.taskModels.matchingModel || availableModels[0]?.id || 'gemini-2.5-flash');
-  const [generationModel, setGenerationModel] = useState(settings.taskModels.generationModel || availableModels[0]?.id || 'gemini-2.5-flash');
-  const [parsingModel, setParsingModel] = useState(settings.taskModels.parsingModel || availableModels[0]?.id || 'gemini-2.5-flash');
-  const [temperature, setTemperature] = useState(settings.taskModels.temperature ?? 0.1);
-
   const [savedMessage, setSavedMessage] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    const updatedTaskModels = {
-      extractionModel,
-      matchingModel,
-      generationModel,
-      parsingModel,
-      temperature: Number(temperature)
-    };
-
+  const handleSave = (event: React.FormEvent) => {
+    event.preventDefault();
     updateSettings({
-      minApplyScore: Number(minApply),
-      minReviewScore: Number(minReview),
-      targetLocation,
-      rejectPaidApplications: rejectPaid,
-      useAIInterpretation: useAI,
-      taskModels: updatedTaskModels
+      targetLocation: targetLocation.trim(),
+      rejectPaidApplications: rejectPaid
     });
-
-    aiProvider.setConfig({
-      modelName: extractionModel,
-      temperature: Number(temperature),
-      taskModels: updatedTaskModels
-    });
-
     setSavedMessage(true);
-    setTimeout(() => setSavedMessage(false), 2500);
   };
 
   return (
     <div className="max-w-4xl space-y-6">
-      {/* Top Banner */}
-      <div className="bg-white border border-zinc-200 rounded-lg p-5">
-        <h2 className="text-base font-bold text-zinc-900 tracking-tight flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-zinc-700" />
-          <span>System Settings &amp; Multi-Model AI Architecture</span>
+      <section className="rounded-lg border border-zinc-200 bg-white p-5">
+        <h2 className="flex items-center gap-2 text-base font-bold tracking-tight text-zinc-900">
+          <Sliders className="h-4 w-4 text-zinc-700" />
+          Candidate Preferences
         </h2>
-        <p className="text-xs text-zinc-500 mt-1">
-          Configure multi-model task routing, deterministic evaluation thresholds, candidate profiles, and audit logs.
+        <p className="mt-1 text-xs text-zinc-500">
+          Preferences guide opportunity filtering. They do not change your factual career evidence.
         </p>
-      </div>
+      </section>
 
-      {/* Main Settings Form */}
-      <form onSubmit={handleSave} className="space-y-6 text-xs">
-        {/* Section 29 & 30: AI Model Abstraction Layer */}
-        <div className="bg-white border border-zinc-200 rounded-lg p-6 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-zinc-900 font-mono flex items-center gap-1.5">
-                <Cpu className="w-4 h-4 text-purple-600" />
-                AI Model Abstraction Layer (Multi-Model Support)
-              </span>
-              <p className="text-[11px] text-zinc-500 mt-0.5">
-                No hardcoded models. Assign task-appropriate models across extraction, matching, document parsing, and CV writing.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 font-mono text-[11px]">
-              <span className={`px-2 py-0.5 rounded font-bold ${
-                aiProvider.isAIAvailable() ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-              }`}>
-                {aiProvider.isAIAvailable() ? 'AI Active (API Key Detected)' : 'Deterministic Fallback Active ($0 Cost)'}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-3 bg-zinc-50 border border-zinc-200 rounded space-y-1">
-              <label className="font-bold text-zinc-900 block">Requirement Extraction Task Model:</label>
-              <select
-                value={extractionModel}
-                onChange={(e) => setExtractionModel(e.target.value)}
-                className="w-full p-2 bg-white border border-zinc-300 rounded font-mono text-xs"
-              >
-                {availableModels.map(m => (
-                  <option key={m.id} value={m.id}>{m.label}</option>
-                ))}
-              </select>
-              <span className="text-[10px] text-zinc-500 block">Used for parsing discrete requirements from JD text.</span>
-            </div>
-
-            <div className="p-3 bg-zinc-50 border border-zinc-200 rounded space-y-1">
-              <label className="font-bold text-zinc-900 block">Evidence Matching &amp; Reasoning Model:</label>
-              <select
-                value={matchingModel}
-                onChange={(e) => setMatchingModel(e.target.value)}
-                className="w-full p-2 bg-white border border-zinc-300 rounded font-mono text-xs"
-              >
-                {availableModels.map(m => (
-                  <option key={m.id} value={m.id}>{m.label}</option>
-                ))}
-              </select>
-              <span className="text-[10px] text-zinc-500 block">Used for nuanced semantic evidence mapping and boundary checking.</span>
-            </div>
-
-            <div className="p-3 bg-zinc-50 border border-zinc-200 rounded space-y-1">
-              <label className="font-bold text-zinc-900 block">CV &amp; Materials Generation Model:</label>
-              <select
-                value={generationModel}
-                onChange={(e) => setGenerationModel(e.target.value)}
-                className="w-full p-2 bg-white border border-zinc-300 rounded font-mono text-xs"
-              >
-                {availableModels.map(m => (
-                  <option key={m.id} value={m.id}>{m.label}</option>
-                ))}
-              </select>
-              <span className="text-[10px] text-zinc-500 block">Used for Master CV synthesis and one-time ATS job-specific CV tailoring.</span>
-            </div>
-
-            <div className="p-3 bg-zinc-50 border border-zinc-200 rounded space-y-1">
-              <label className="font-bold text-zinc-900 block">Candidate Document Parsing Model:</label>
-              <select
-                value={parsingModel}
-                onChange={(e) => setParsingModel(e.target.value)}
-                className="w-full p-2 bg-white border border-zinc-300 rounded font-mono text-xs"
-              >
-                {availableModels.map(m => (
-                  <option key={m.id} value={m.id}>{m.label}</option>
-                ))}
-              </select>
-              <span className="text-[10px] text-zinc-500 block">Used for parsing uploaded resumes/PDFs into structured Master Profiles.</span>
-            </div>
-          </div>
-
-          <div className="p-3 bg-zinc-50 border border-zinc-200 rounded space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="font-bold text-zinc-900">Temperature Parameter: {temperature}</label>
-              <span className="text-[10px] text-zinc-500 font-mono">0.0 (Strictly factual) - 1.0 (Creative)</span>
-            </div>
+      <form onSubmit={handleSave} className="space-y-6 text-sm">
+        <section className="space-y-4 rounded-lg border border-zinc-200 bg-white p-6">
+          <div>
+            <label htmlFor="target-location" className="mb-1 block font-semibold text-zinc-900">
+              Preferred location
+            </label>
             <input
-              type="range"
-              min="0.0"
-              max="0.5"
-              step="0.05"
-              value={temperature}
-              onChange={(e) => setTemperature(parseFloat(e.target.value))}
-              className="w-full cursor-pointer accent-zinc-900"
+              id="target-location"
+              value={targetLocation}
+              onChange={(event) => setTargetLocation(event.target.value)}
+              placeholder="e.g. Remote, Nigeria"
+              className="w-full rounded border border-zinc-300 bg-white p-2 text-sm"
             />
-            <p className="text-[10px] text-zinc-500">
-              Low temperature (0.1) is mandatory for evidence-grounded matching to prevent hallucinated qualifications or metrics.
+            <p className="mt-1 text-xs text-zinc-500">
+              Use this as a search preference, not as proof of work authorization or employer eligibility.
             </p>
           </div>
-        </div>
 
-        {/* Section 22 & 24: Scoring Thresholds & Gate Rules */}
-        <div className="bg-white border border-zinc-200 rounded-lg p-6 space-y-4 shadow-xs">
-          <span className="text-xs font-bold uppercase tracking-wider text-zinc-900 font-mono block">
-            Evaluation Thresholds &amp; Decision Gate
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-3.5 bg-emerald-50/50 border border-emerald-200 rounded">
-              <label className="font-bold text-emerald-950 block mb-1">
-                APPLY Score Threshold (Min):
-              </label>
-              <input
-                type="number"
-                min={60}
-                max={95}
-                value={minApply}
-                onChange={(e) => setMinApply(Number(e.target.value))}
-                className="w-full p-2 bg-white border border-emerald-300 rounded font-mono font-bold text-sm"
-              />
-              <span className="text-[10px] text-emerald-800 mt-1 block">
-                Roles scoring &ge;{minApply} receive automatic APPLY status if all 10 Apply Gate checks pass.
+          <label className="flex cursor-pointer items-start gap-2.5">
+            <input
+              type="checkbox"
+              checked={rejectPaid}
+              onChange={(event) => setRejectPaid(event.target.checked)}
+              className="mt-0.5 rounded text-zinc-900"
+            />
+            <span>
+              <span className="block font-semibold text-zinc-900">Exclude paid application routes</span>
+              <span className="mt-1 block text-xs text-zinc-500">
+                Prefer opportunities with a free, usable application route. A route must still be checked before it is described as free.
               </span>
-            </div>
+            </span>
+          </label>
 
-            <div className="p-3.5 bg-amber-50/50 border border-amber-200 rounded">
-              <label className="font-bold text-amber-950 block mb-1">
-                REVIEW Score Threshold (Min):
-              </label>
-              <input
-                type="number"
-                min={50}
-                max={84}
-                value={minReview}
-                onChange={(e) => setMinReview(Number(e.target.value))}
-                className="w-full p-2 bg-white border border-amber-300 rounded font-mono font-bold text-sm"
-              />
-              <span className="text-[10px] text-amber-800 mt-1 block">
-                Roles scoring {minReview}&ndash;{minApply - 1} enter Review Queue. Below {minReview} is REJECT.
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-3 pt-2">
-            <label className="flex items-start gap-2.5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={rejectPaid}
-                onChange={(e) => setRejectPaid(e.target.checked)}
-                className="mt-0.5 rounded text-zinc-900 focus:ring-0"
-              />
-              <div>
-                <span className="font-semibold text-zinc-900 block">
-                  Strictly Hard-Reject Paid Application Platforms ($0 Rule)
-                </span>
-                <span className="text-[11px] text-zinc-500">
-                  Instantly reject and flag any opportunity requiring fees, paid subscriptions, or paid unlocks.
-                </span>
-              </div>
-            </label>
-
-            <label className="flex items-start gap-2.5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={useAI}
-                onChange={(e) => setUseAI(e.target.checked)}
-                className="mt-0.5 rounded text-zinc-900 focus:ring-0"
-              />
-              <div>
-                <span className="font-semibold text-zinc-900 block">
-                  Enable AI Model Semantic Interpretation (When API Key is present)
-                </span>
-                <span className="text-[11px] text-zinc-500">
-                  When enabled, invokes configured Gemini models for nuanced matching. When disabled or offline, uses 100% deterministic local rules.
-                </span>
-              </div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between pt-4 border-t border-zinc-200">
+          <div className="flex items-center justify-between border-t border-zinc-200 pt-4">
             {savedMessage && (
-              <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4" />
-                Settings saved successfully.
+              <span className="flex items-center gap-1 text-xs font-semibold text-emerald-700">
+                <CheckCircle2 className="h-4 w-4" />
+                Preferences saved in this browser.
               </span>
             )}
             <button
               type="submit"
-              className="px-5 py-2 font-bold text-white bg-zinc-900 hover:bg-zinc-800 rounded transition-colors ml-auto shadow-xs"
+              className="ml-auto rounded bg-zinc-900 px-5 py-2 font-semibold text-white transition-colors hover:bg-zinc-800"
             >
-              Save System Settings
+              Save Preferences
             </button>
           </div>
-        </div>
+        </section>
       </form>
 
-      {/* Section 31: AI Task Activity Log */}
-      <div className="bg-white border border-zinc-200 rounded-lg p-6 space-y-4 text-xs shadow-xs">
-        <div className="flex items-center justify-between pb-2 border-b border-zinc-200">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 font-mono flex items-center gap-1.5">
-            <Activity className="w-4 h-4 text-teal-600" />
-            <span>AI Task Activity Audit Trail ({aiTaskLogs.length} events)</span>
-          </h3>
-          <span className="text-[10px] text-zinc-400 font-mono">Live In-Memory Telemetry</span>
-        </div>
-
-        {aiTaskLogs.length > 0 ? (
-          <div className="space-y-2 max-h-52 overflow-y-auto font-mono text-[11px]">
-            {aiTaskLogs.slice(0, 10).map((log) => (
-              <div key={log.id} className="p-2.5 bg-zinc-50 border border-zinc-200 rounded flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${log.status === 'SUCCESS' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                  <span className="font-bold text-zinc-900">{log.task}</span>
-                  <span className="text-zinc-500">({log.model})</span>
-                </div>
-                <div className="flex items-center gap-3 text-zinc-400 text-[10px]">
-                  <span>{log.latencyMs}ms</span>
-                  <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-zinc-400 italic py-2 text-center">
-            No recent AI calls recorded yet. Ingest a job, discover pathways, or run diagnostics to log activity.
-          </p>
-        )}
+      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        <p>
+          These preferences and the prototype data below are still browser-local. They are not yet backed by the PostgreSQL API and will not automatically follow you to another device. Server persistence must be completed before this is treated as production-ready.
+        </p>
       </div>
 
       {/* Data Management & Demo Reset */}
       <div className="bg-white border border-zinc-200 rounded-lg p-6 space-y-4 text-xs shadow-xs">
         <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 font-mono">
-          Data Management &amp; Test Case Restoration
+          Prototype Data Management
         </h3>
         <p className="text-zinc-500">
-          Export full state to CSV or JSON backup, or reset data to the standard test pipeline.
+          Export the current browser-held prototype state or reset it. This is not a server backup.
         </p>
 
         <div className="flex flex-wrap items-center gap-3 pt-2">

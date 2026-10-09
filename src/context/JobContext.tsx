@@ -488,7 +488,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // CV Studio & Generation
   // -------------------------------------------------------------
   const generateMasterCVWithAI = async (): Promise<MasterCV> => {
-    const mcv = await aiProvider.generateMasterCV(masterProfile, preferences, settings.taskModels.generationModel);
+    const mcv = await aiProvider.generateMasterCV(masterProfile, preferences);
     setMasterCV(mcv);
     return mcv;
   };
@@ -504,7 +504,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const generateCVVariantForPathway = async (pathwayId: string): Promise<CVVariant> => {
     const pathway = careerPathways.find(p => p.id === pathwayId) || careerPathways[0];
-    const variant = await aiProvider.generateCVVariantFromPathway(pathway, masterProfile, settings.taskModels.generationModel);
+    const variant = await aiProvider.generateCVVariantFromPathway(pathway, masterProfile);
     variant.pathwayId = pathway.id;
     variant.candidateApproved = true;
     
@@ -585,8 +585,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       targetVariant,
       masterProfile,
       preferences,
-      settings.taskModels.generationModel
-    );
+      );
 
     setJobs(prev => prev.map(j => {
       if (j.id === jobId) {

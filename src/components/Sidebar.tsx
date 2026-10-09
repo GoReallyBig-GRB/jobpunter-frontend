@@ -41,8 +41,7 @@ export type NavTab =
   | 'tests'
   | 'ai_providers'
   | 'google_workspace'
-  | 'settings'
-  | 'admin';
+  | 'settings';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -231,27 +230,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </div>
 
-      {/* Restricted Admin Control Plane (Section 20 & 21) */}
-      <div className="p-3 border-t border-zinc-800 bg-zinc-950/80 shrink-0">
-        <button
-          onClick={() => setActiveTab('admin')}
-          className={`w-full flex items-center justify-between p-2 rounded-lg text-xs font-semibold transition-all ${
-            activeTab === 'admin'
-              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-xs'
-              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 border border-zinc-800'
-          }`}
-          title="Restricted System Control Plane for governing AI tasks, prompts, and integrations"
-        >
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>Admin Control Plane</span>
-          </div>
-          <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
-            Control
-          </span>
-        </button>
-      </div>
-
+      {/* Admin controls stay unavailable in the candidate UI until server-enforced role authorization exists. */}
       {/* Footer Info */}
       <div className="px-4 py-2 border-t border-zinc-800/60 text-[10px] font-mono text-zinc-500 flex items-center justify-between shrink-0">
         <span>JobPunter</span>

@@ -80,8 +80,7 @@ async function getData<T>(path: string, init?: RequestInit): Promise<T> {
 /**
  * Typed wrappers for backend routes that currently exist.
  *
- * These functions do not replace the existing localStorage/Firestore state.
- * They provide a safe integration boundary while the backend API grows.
+ * These wrappers define an API integration boundary. A screen is migrated only after its backend contract, ownership checks, data migration, and failure states are verified.
  */
 export const backendApi = {
   getCandidateProfile: () =>
