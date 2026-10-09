@@ -1,9 +1,10 @@
-name: Frontend CI
+name: JobPunter Frontend CI
 
 on:
   push:
     branches:
       - main
+      - migration/vite-to-nextjs
   pull_request:
     branches:
       - main
@@ -13,29 +14,38 @@ permissions:
   contents: read
 
 concurrency:
-  group: frontend-ci-${{ github.workflow }}-${{ github.ref }}
+  group: jobpunter-frontend-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Type-check and build
+  frontend:
+    name: Frontend type-check and build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    timeout-minutes: 20
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-
-      - name: Type-check
-        run: npm run lint
-
-      - name: Build production bundle
-        run: npm run build
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Test client-secret guard detector
+        run: node scripts/check-client-secrets.mjs --self-test
+      - name: Guard against client-bundled deployment secrets
+        run: node scripts/check-client-secrets.mjs
+      - run: npm run lint
+      - run: npm run build
+      - name: Smoke-test frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start > /tmp/jobpunter-next.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ -o /tmp/jobpunter-home.html; then break; fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then cat /tmp/jobpunter-next.log; exit 1; fi
+            sleep 2
+          done
+          test -s /tmp/jobpunter-home.html || { cat /tmp/jobpunter-next.log; exit 1; }
+          grep -q 'JobPunter' /tmp/jobpunter-home.html

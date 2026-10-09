@@ -3,13 +3,8 @@ import { useJobs } from '../context/JobContext';
 import { 
   initAuth, 
   googleSignIn, 
-  logoutUser, 
-  getAccessToken,
-  syncJobsToFirestore,
-  loadJobsFromFirestore,
-  syncProfileToFirestore,
-  loadProfileFromFirestore,
-  testFirestoreConnection
+  connectGoogleWorkspace,
+  logoutUser,
 } from '../services/firebase';
 import { 
   listDriveFiles, 
@@ -41,9 +36,7 @@ import {
   Mail, 
   Calendar, 
   CheckSquare, 
-  Database, 
   UploadCloud, 
-  DownloadCloud, 
   RefreshCw, 
   ExternalLink, 
   Trash2, 
@@ -58,8 +51,9 @@ import {
   Search
 } from 'lucide-react';
 import { User } from 'firebase/auth';
+import type { WorkspaceIntegration } from '../services/firebase';
 
-type WorkspaceTab = 'drive' | 'gmail' | 'calendar' | 'tasks' | 'firebase';
+type WorkspaceTab = 'drive' | 'gmail' | 'calendar' | 'tasks' ;
 
 export const GoogleWorkspaceView: React.FC = () => {
   const { 
@@ -69,12 +63,12 @@ export const GoogleWorkspaceView: React.FC = () => {
     masterCV, 
     cvVariants, 
     ingestEmailAlert,
-    updateMasterProfile 
   } = useJobs();
 
   // Auth State
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [hasToken, setHasToken] = useState(false);
+  const [connectedIntegrations, setConnectedIntegrations] = useState<Set<WorkspaceIntegration>>(new Set());
+  const isConnected = (integration: WorkspaceIntegration) => connectedIntegrations.has(integration);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -113,10 +107,6 @@ export const GoogleWorkspaceView: React.FC = () => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
 
-  // Firebase Sync State
-  const [firestoreStatus, setFirestoreStatus] = useState<string>('Connected');
-  const [syncMessage, setSyncMessage] = useState<string | null>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
 
   // Confirmation Modal State (MANDATORY per workspace integration skill)
   const [confirmModal, setConfirmModal] = useState<{
@@ -136,14 +126,13 @@ export const GoogleWorkspaceView: React.FC = () => {
   // Track Auth State on Mount
   useEffect(() => {
     const unsubscribe = initAuth(
-      (user, token) => {
+      (user) => {
         setCurrentUser(user);
-        setHasToken(!!token);
         setIsAuthLoading(false);
       },
       () => {
         setCurrentUser(null);
-        setHasToken(false);
+        setConnectedIntegrations(new Set());
         setIsAuthLoading(false);
       }
     );
@@ -151,15 +140,15 @@ export const GoogleWorkspaceView: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Fetch data when authenticated and tab changes
+  // Load data only for the integration the user explicitly connected.
   useEffect(() => {
-    if (hasToken) {
+    if (isConnected(activeTab)) {
       if (activeTab === 'drive') loadDrive();
       if (activeTab === 'gmail') loadGmail();
       if (activeTab === 'calendar') loadCalendar();
       if (activeTab === 'tasks') loadTasks();
     }
-  }, [hasToken, activeTab]);
+  }, [connectedIntegrations, activeTab]);
 
   const handleSignIn = async () => {
     setAuthError(null);
@@ -167,7 +156,6 @@ export const GoogleWorkspaceView: React.FC = () => {
     try {
       const res = await googleSignIn();
       setCurrentUser(res.user);
-      setHasToken(true);
     } catch (err: any) {
       setAuthError(err.message || 'Google sign-in failed');
     } finally {
@@ -175,14 +163,28 @@ export const GoogleWorkspaceView: React.FC = () => {
     }
   };
 
+  const handleConnectIntegration = async (integration: WorkspaceIntegration) => {
+    if (!currentUser) {
+      await handleSignIn();
+      return;
+    }
+    setAuthError(null);
+    try {
+      await connectGoogleWorkspace(integration);
+      setConnectedIntegrations(previous => new Set(previous).add(integration));
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Could not connect this Google integration.');
+    }
+  };
+
   const handleSignOut = async () => {
     await logoutUser();
     setCurrentUser(null);
-    setHasToken(false);
     setDriveFiles([]);
     setGmailMessages([]);
     setCalendarEvents([]);
     setGoogleTasks([]);
+    setConnectedIntegrations(new Set());
   };
 
   // ==========================================
@@ -436,65 +438,6 @@ export const GoogleWorkspaceView: React.FC = () => {
     });
   };
 
-  // ==========================================
-  // FIREBASE CLOUD PERSISTENCE HANDLERS
-  // ==========================================
-  const handleBackupToFirestore = async () => {
-    if (!currentUser) {
-      alert('Please sign in to backup data to Firebase Cloud.');
-      return;
-    }
-
-    setIsSyncing(true);
-    setSyncMessage(null);
-    try {
-      const [profileRes, jobsRes] = await Promise.all([
-        syncProfileToFirestore(currentUser.uid, masterProfile),
-        syncJobsToFirestore(currentUser.uid, jobs)
-      ]);
-
-      if (profileRes.success && jobsRes.success) {
-        setSyncMessage(`Successfully backed up ${jobs.length} jobs and Master Profile to Firebase Firestore.`);
-      } else {
-        setSyncMessage(`Backup completed with warnings: ${profileRes.message || ''} ${jobsRes.message || ''}`);
-      }
-    } catch (err: any) {
-      setSyncMessage('Firestore backup failed: ' + err.message);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const handleRestoreFromFirestore = async () => {
-    if (!currentUser) return;
-
-    setConfirmModal({
-      isOpen: true,
-      title: 'Restore Data from Firebase Cloud',
-      description: `This will load candidate profile and job documents from your Firebase Cloud database into JobPunter.\n\nContinue?`,
-      confirmLabel: 'Restore Data',
-      isDestructive: false,
-      action: async () => {
-        setIsSyncing(true);
-        try {
-          const [cloudProfile, cloudJobs] = await Promise.all([
-            loadProfileFromFirestore(currentUser.uid),
-            loadJobsFromFirestore(currentUser.uid)
-          ]);
-
-          if (cloudProfile) {
-            updateMasterProfile(cloudProfile);
-          }
-          setSyncMessage(`Restored from Firestore: Profile loaded, ${cloudJobs.length} jobs retrieved.`);
-        } catch (err: any) {
-          setSyncMessage('Restore failed: ' + err.message);
-        } finally {
-          setIsSyncing(false);
-        }
-      }
-    });
-  };
-
   return (
     <div className="space-y-6">
       {/* Workspace Authentication & Header Banner */}
@@ -504,21 +447,21 @@ export const GoogleWorkspaceView: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                 <Sparkles className="w-3.5 h-3.5" />
-                Google Workspace &amp; Firebase Cloud
+                Google Workspace Integrations
               </span>
               <span className="text-xs font-mono text-zinc-400">Zero-Cost Infrastructure</span>
             </div>
             <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
-              Google Workspace Ecosystem &amp; Cloud Database
+              Google Workspace Integrations
             </h1>
             <p className="text-xs text-zinc-600 max-w-2xl">
-              Seamlessly connect Google Drive for CV dossiers, Gmail for automatic job alert ingestion, Google Calendar for interview scheduling, Google Tasks for application checklists, and Firebase Firestore for cloud persistence.
+              Connect Google Drive, Gmail, Calendar, and Tasks when needed. JobPunter application data is managed by the backend API and PostgreSQL.
             </p>
           </div>
 
           {/* Google Sign-in / User Profile Card */}
           <div className="shrink-0">
-            {currentUser && hasToken ? (
+            {currentUser ? (
               <div className="flex items-center gap-3 bg-zinc-50 border border-zinc-200 rounded-lg p-2.5">
                 {currentUser.photoURL ? (
                   <img src={currentUser.photoURL} alt={currentUser.displayName || ''} className="w-9 h-9 rounded-full border border-zinc-300" />
@@ -531,7 +474,7 @@ export const GoogleWorkspaceView: React.FC = () => {
                   <p className="text-xs font-bold text-zinc-900 leading-tight">{currentUser.displayName || 'Google Account'}</p>
                   <p className="text-[11px] text-zinc-500 font-mono truncate max-w-[180px]">{currentUser.email}</p>
                   <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
-                    <CheckCircle2 className="w-3 h-3" /> Connected
+                    <CheckCircle2 className="w-3 h-3" /> Signed in
                   </span>
                 </div>
                 <button
@@ -638,17 +581,6 @@ export const GoogleWorkspaceView: React.FC = () => {
           )}
         </button>
 
-        <button
-          onClick={() => setActiveTab('firebase')}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer shrink-0 ${
-            activeTab === 'firebase'
-              ? 'bg-indigo-600 text-white shadow-xs'
-              : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
-          }`}
-        >
-          <Database className="w-4 h-4" />
-          <span>Firebase Cloud Sync</span>
-        </button>
       </div>
 
       {/* Main Tab Content */}
@@ -669,7 +601,7 @@ export const GoogleWorkspaceView: React.FC = () => {
                 </p>
               </div>
 
-              {hasToken && (
+              {isConnected('drive') && (
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleExportCVToDrive('master')}
@@ -712,7 +644,7 @@ export const GoogleWorkspaceView: React.FC = () => {
               )}
             </div>
 
-            {!hasToken ? (
+            {!isConnected('drive') ? (
               <div className="text-center py-12 bg-zinc-50 rounded-xl border border-dashed border-zinc-300">
                 <FolderGit2 className="w-12 h-12 text-zinc-400 mx-auto mb-3" />
                 <h4 className="text-sm font-bold text-zinc-800">Google Drive Connection Inactive</h4>
@@ -720,7 +652,7 @@ export const GoogleWorkspaceView: React.FC = () => {
                   Sign in with your Google account above to browse your Google Drive files and export tailored CV variants directly to the cloud.
                 </p>
                 <button
-                  onClick={handleSignIn}
+                  onClick={() => handleConnectIntegration('drive')}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors cursor-pointer shadow-xs"
                 >
                   Connect Google Drive
@@ -795,7 +727,7 @@ export const GoogleWorkspaceView: React.FC = () => {
                 </p>
               </div>
 
-              {hasToken && (
+              {isConnected('gmail') && (
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowCompose(!showCompose)}
@@ -817,7 +749,7 @@ export const GoogleWorkspaceView: React.FC = () => {
             </div>
 
             {/* Compose Drawer if active */}
-            {showCompose && hasToken && (
+            {showCompose && isConnected('gmail') && (
               <div className="bg-rose-50/50 border border-rose-200 rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold text-rose-950 uppercase tracking-wider font-mono">
@@ -868,7 +800,7 @@ export const GoogleWorkspaceView: React.FC = () => {
             )}
 
             {/* Search Query Filter */}
-            {hasToken && (
+            {isConnected('gmail') && (
               <div className="flex flex-col sm:flex-row items-center gap-2">
                 <div className="relative flex-1 w-full">
                   <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
@@ -889,7 +821,7 @@ export const GoogleWorkspaceView: React.FC = () => {
               </div>
             )}
 
-            {!hasToken ? (
+            {!isConnected('gmail') ? (
               <div className="text-center py-12 bg-zinc-50 rounded-xl border border-dashed border-zinc-300">
                 <Mail className="w-12 h-12 text-zinc-400 mx-auto mb-3" />
                 <h4 className="text-sm font-bold text-zinc-800">Gmail Ingestion Inactive</h4>
@@ -897,7 +829,7 @@ export const GoogleWorkspaceView: React.FC = () => {
                   Connect your Gmail account to automatically scan for job alerts and 1-click ingest opportunities directly into your pipeline.
                 </p>
                 <button
-                  onClick={handleSignIn}
+                  onClick={() => handleConnectIntegration('gmail')}
                   className="px-4 py-2 bg-rose-600 text-white rounded-lg text-xs font-semibold hover:bg-rose-700 transition-colors cursor-pointer shadow-xs"
                 >
                   Connect Gmail
@@ -972,7 +904,7 @@ export const GoogleWorkspaceView: React.FC = () => {
                 </p>
               </div>
 
-              {hasToken && (
+              {isConnected('calendar') && (
                 <button
                   onClick={loadCalendar}
                   disabled={isCalendarLoading}
@@ -984,7 +916,7 @@ export const GoogleWorkspaceView: React.FC = () => {
               )}
             </div>
 
-            {hasToken && (
+            {isConnected('calendar') && (
               <div className="bg-amber-50/40 border border-amber-200 rounded-xl p-4 space-y-3">
                 <h4 className="text-xs font-bold text-amber-950 uppercase font-mono tracking-wider">
                   Schedule New Interview or Milestone
@@ -1028,7 +960,7 @@ export const GoogleWorkspaceView: React.FC = () => {
               </div>
             )}
 
-            {!hasToken ? (
+            {!isConnected('calendar') ? (
               <div className="text-center py-12 bg-zinc-50 rounded-xl border border-dashed border-zinc-300">
                 <Calendar className="w-12 h-12 text-zinc-400 mx-auto mb-3" />
                 <h4 className="text-sm font-bold text-zinc-800">Google Calendar Inactive</h4>
@@ -1036,7 +968,7 @@ export const GoogleWorkspaceView: React.FC = () => {
                   Connect your Google Calendar to manage interview rounds, schedule milestones, and sync application deadlines.
                 </p>
                 <button
-                  onClick={handleSignIn}
+                  onClick={() => handleConnectIntegration('calendar')}
                   className="px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-semibold hover:bg-amber-700 transition-colors cursor-pointer shadow-xs"
                 >
                   Connect Calendar
@@ -1112,7 +1044,7 @@ export const GoogleWorkspaceView: React.FC = () => {
                 </p>
               </div>
 
-              {hasToken && (
+              {isConnected('tasks') && (
                 <button
                   onClick={loadTasks}
                   disabled={isTasksLoading}
@@ -1124,7 +1056,7 @@ export const GoogleWorkspaceView: React.FC = () => {
               )}
             </div>
 
-            {hasToken && (
+            {isConnected('tasks') && (
               <div className="bg-emerald-50/40 border border-emerald-200 rounded-xl p-4 space-y-3">
                 <h4 className="text-xs font-bold text-emerald-950 uppercase font-mono tracking-wider">
                   Add Application Action Item
@@ -1153,7 +1085,7 @@ export const GoogleWorkspaceView: React.FC = () => {
               </div>
             )}
 
-            {!hasToken ? (
+            {!isConnected('tasks') ? (
               <div className="text-center py-12 bg-zinc-50 rounded-xl border border-dashed border-zinc-300">
                 <CheckSquare className="w-12 h-12 text-zinc-400 mx-auto mb-3" />
                 <h4 className="text-sm font-bold text-zinc-800">Google Tasks Inactive</h4>
@@ -1161,7 +1093,7 @@ export const GoogleWorkspaceView: React.FC = () => {
                   Connect your Google account to create and manage application tasks, follow-up reminders, and interview prep lists.
                 </p>
                 <button
-                  onClick={handleSignIn}
+                  onClick={() => handleConnectIntegration('tasks')}
                   className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
                 >
                   Connect Google Tasks
@@ -1217,90 +1149,6 @@ export const GoogleWorkspaceView: React.FC = () => {
           </div>
         )}
 
-        {/* =======================================================
-            TAB 5: FIREBASE CLOUD PERSISTENCE
-           ======================================================= */}
-        {activeTab === 'firebase' && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
-              <div>
-                <h3 className="text-base font-bold text-zinc-900 flex items-center gap-2">
-                  <Database className="w-5 h-5 text-indigo-600" />
-                  Firebase Cloud Firestore Sync
-                </h3>
-                <p className="text-xs text-zinc-500">
-                  Persistent cloud database storage for candidate profiles, evaluated jobs, custom CV variants, and application history.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Firestore Rules ABAC Enforced
-                </span>
-              </div>
-            </div>
-
-            {/* Cloud Status Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-xl space-y-1">
-                <span className="text-[10px] font-mono uppercase text-zinc-400 tracking-wider">Local Jobs Tracked</span>
-                <p className="text-2xl font-bold text-zinc-900">{jobs.length}</p>
-                <p className="text-[11px] text-zinc-500">Active opportunities in pool</p>
-              </div>
-
-              <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-xl space-y-1">
-                <span className="text-[10px] font-mono uppercase text-zinc-400 tracking-wider">Candidate Dossier</span>
-                <p className="text-base font-bold text-zinc-900 truncate">{masterProfile.candidateName || 'Unnamed'}</p>
-                <p className="text-[11px] text-zinc-500">{cvVariants.length} CV Variants configured</p>
-              </div>
-
-              <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-xl space-y-1">
-                <span className="text-[10px] font-mono uppercase text-zinc-400 tracking-wider">Cloud Auth State</span>
-                <p className="text-sm font-bold text-zinc-900 truncate">
-                  {currentUser ? currentUser.email : 'Unauthenticated'}
-                </p>
-                <p className="text-[11px] text-emerald-600 font-medium">Firestore Region: europe-west2</p>
-              </div>
-            </div>
-
-            {syncMessage && (
-              <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs text-indigo-900 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
-                <span>{syncMessage}</span>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="p-6 bg-zinc-50 border border-zinc-200 rounded-xl space-y-4">
-              <h4 className="text-xs font-bold text-zinc-900 uppercase font-mono tracking-wider">
-                Cloud Synchronization Actions
-              </h4>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={handleBackupToFirestore}
-                  disabled={!currentUser || isSyncing}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  <UploadCloud className="w-4 h-4" />
-                  <span>{isSyncing ? 'Synchronizing...' : 'Backup Local Pool to Firebase Cloud'}</span>
-                </button>
-
-                <button
-                  onClick={handleRestoreFromFirestore}
-                  disabled={!currentUser || isSyncing}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-300 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  <DownloadCloud className="w-4 h-4 text-indigo-600" />
-                  <span>Restore from Firebase Cloud</span>
-                </button>
-              </div>
-              <p className="text-[11px] text-zinc-400">
-                Security note: All documents are stored in user-isolated paths (/users/{`{userId}`}/...) protected by ABAC Firestore security rules.
-              </p>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Mandatory User Confirmation Modal */}
