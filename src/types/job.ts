@@ -250,7 +250,7 @@ export interface CandidatePersonalDetails {
   currentLocation: string;
   eligibleCountries: string[];
   workAuthorization: string;
-  remotePreference: 'REMOTE_ONLY' | 'REMOTE_OK' | 'HYBRID_OK' | 'ONSITE_OK';
+  remotePreference: RemotePreference;
   relocationWillingness: boolean;
   travelWillingness?: string;
   employmentTypePreferences?: string[];
@@ -646,7 +646,7 @@ export interface JobPreferences {
   salaryMin?: number | null;
   salaryMax?: number | null;
   salaryCurrency?: string;
-  salaryPeriod?: string;
+  salaryPeriod?: 'HOUR' | 'MONTH' | 'YEAR' | 'CONTRACT' | 'UNSPECIFIED';
   salaryExpectation?: string;
   employmentTypes?: string[];
   excludedJobTypes: string[];
