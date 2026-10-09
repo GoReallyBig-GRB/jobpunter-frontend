@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useJobs } from '../context/JobContext';
 import { Sliders, RotateCcw, Trash2, Download, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
   const {
     settings,
+    preferences,
+    savePreferences,
+    preferencesRevision,
+    preferencesStatus,
+    preferencesError,
+    hasSavedPreferences,
     updateSettings,
     resetToDemoData,
     clearAllData,
@@ -12,12 +18,25 @@ export const SettingsView: React.FC = () => {
     exportJSON
   } = useJobs();
 
-  const [targetLocation, setTargetLocation] = useState(settings.targetLocation);
-  const [rejectPaid, setRejectPaid] = useState(settings.rejectPaidApplications);
+  const [targetLocation, setTargetLocation] = useState(preferences.preferredLocations?.[0] || settings.targetLocation);
+  const [rejectPaid, setRejectPaid] = useState((preferences.maxApplicationFee ?? 0) === 0);
   const [savedMessage, setSavedMessage] = useState(false);
 
-  const handleSave = (event: React.FormEvent) => {
+  useEffect(() => {
+    setTargetLocation(preferences.preferredLocations?.[0] || '');
+    setRejectPaid((preferences.maxApplicationFee ?? 0) === 0);
+  }, [preferences]);
+
+  const handleSave = async (event: React.FormEvent) => {
     event.preventDefault();
+    setSavedMessage(false);
+    const nextPreferences = {
+      ...preferences,
+      preferredLocations: targetLocation.trim() ? [targetLocation.trim()] : [],
+      maxApplicationFee: rejectPaid ? 0 : (preferences.maxApplicationFee ?? 0)
+    };
+    const saved = await savePreferences(nextPreferences);
+    if (!saved) return;
     updateSettings({
       targetLocation: targetLocation.trim(),
       rejectPaidApplications: rejectPaid
@@ -74,12 +93,13 @@ export const SettingsView: React.FC = () => {
             {savedMessage && (
               <span className="flex items-center gap-1 text-xs font-semibold text-emerald-700">
                 <CheckCircle2 className="h-4 w-4" />
-                Preferences saved in this browser.
+                Preferences saved to the server.
               </span>
             )}
             <button
               type="submit"
-              className="ml-auto rounded bg-zinc-900 px-5 py-2 font-semibold text-white transition-colors hover:bg-zinc-800"
+              disabled={preferencesStatus === 'loading' || preferencesStatus === 'saving' || preferencesStatus === 'signed_out' || preferencesRevision === null}
+              className="ml-auto rounded bg-zinc-900 px-5 py-2 font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50"
             >
               Save Preferences
             </button>
@@ -87,11 +107,20 @@ export const SettingsView: React.FC = () => {
         </section>
       </form>
 
-      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950">
+      <div className={`flex items-start gap-2 rounded-lg border p-4 text-xs ${preferencesStatus === 'error' || preferencesStatus === 'conflict' ? 'border-rose-200 bg-rose-50 text-rose-950' : 'border-zinc-200 bg-zinc-50 text-zinc-800'}`}>
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-        <p>
-          These preferences and the prototype data below are still browser-local. They are not yet backed by the PostgreSQL API and will not automatically follow you to another device. Server persistence must be completed before this is treated as production-ready.
-        </p>
+        <div>
+          <p>
+            {preferencesStatus === 'loading' && 'Loading your account preferences from the server…'}
+            {preferencesStatus === 'saving' && 'Saving preferences to the server…'}
+            {preferencesStatus === 'signed_out' && 'Sign in to load and save account preferences.'}
+            {preferencesStatus === 'error' && (preferencesError || 'The preferences request failed.')}
+            {preferencesStatus === 'conflict' && (preferencesError || 'Your preferences changed on the server. Review the latest version before saving again.')}
+            {preferencesStatus === 'ready' && preferencesRevision === 0 && 'Revision 0 represents backend defaults, not a saved user configuration. Save to create the first persisted revision.'}
+            {preferencesStatus === 'ready' && hasSavedPreferences && `Loaded saved server preferences at revision ${preferencesRevision}.`}
+          </p>
+          <p className="mt-1">The prototype jobs, integrations, and demo data below remain browser-local; exporting them is not a server backup.</p>
+        </div>
       </div>
 
       {/* Data Management & Demo Reset */}
