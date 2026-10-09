@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState } from 'react';
 import { JobProvider, useJobs } from './context/JobContext';
 import { Sidebar, NavTab } from './components/Sidebar';
@@ -21,10 +19,11 @@ import { EvidenceLibraryView } from './components/EvidenceLibraryView';
 import { JobDetailModal } from './components/JobDetailModal';
 import { IngestModal } from './components/IngestModal';
 import { DocumentIngestModal } from './components/DocumentIngestModal';
+import { AdminPanelView } from './components/AdminPanelView';
 import { GoogleWorkspaceView } from './components/GoogleWorkspaceView';
 
 function AppContent() {
-  const { masterProfile, preferencesStatus, preferencesError } = useJobs();
+  const { masterProfile } = useJobs();
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [selectedJobIdForModal, setSelectedJobIdForModal] = useState<string | null>(null);
   const [preselectedReviewId, setPreselectedReviewId] = useState<string | null>(null);
@@ -77,11 +76,13 @@ function AppContent() {
       case 'tests':
         return { title: 'Decision Engine Test Suite', subtitle: 'Automated verification across 18 benchmark scenarios' };
       case 'ai_providers':
-        return { title: 'JobPunter AI', subtitle: 'AI execution and configuration are managed by JobPunter.' };
+        return { title: 'AI Providers & Model Registry', subtitle: 'True provider abstraction with task-level routing across Google, OpenAI, Anthropic' };
       case 'settings':
-        return { title: 'Candidate Preferences', subtitle: 'Your search location and application-cost constraints' };
+        return { title: 'System Settings', subtitle: 'Apply-gate thresholds, Nigeria/Remote compliance, and operational rules' };
       case 'google_workspace':
-        return { title: 'Google Workspace Integrations', subtitle: 'Optional Google Drive, Gmail, Calendar, and Tasks connections' };
+        return { title: 'Google Workspace Ecosystem & Firebase Cloud', subtitle: 'Google Drive, Gmail Job Alerts, Google Calendar, Google Tasks & Firestore' };
+      case 'admin':
+        return { title: 'System Administration Control Plane', subtitle: 'AI task governance, prompt instructions, model routing, and integration control' };
       default:
         return { title: 'JobPunter', subtitle: 'Precision Opportunity & Application Engine' };
     }
@@ -108,14 +109,6 @@ function AppContent() {
           title={title}
           subtitle={subtitle}
         />
-
-        {/* Surface preference persistence failures even when triggered by a candidate preset. */}
-        {(preferencesStatus === 'error' || preferencesStatus === 'conflict') && (
-          <div role="alert" className="mx-4 mt-3 rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-900 sm:mx-6 lg:mx-8">
-            <strong>{preferencesStatus === 'conflict' ? 'Candidate preferences changed on the server.' : 'Candidate preferences could not be saved or loaded.'}</strong>
-            <p className="mt-1">{preferencesError || 'Review the preferences page and retry after resolving the issue.'}</p>
-          </div>
-        )}
 
         {/* View Content */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -212,6 +205,9 @@ function AppContent() {
             <GoogleWorkspaceView />
           )}
 
+          {activeTab === 'admin' && (
+            <AdminPanelView onCloseAdmin={() => setActiveTab('dashboard')} />
+          )}
         </main>
 
         {/* Footer info */}

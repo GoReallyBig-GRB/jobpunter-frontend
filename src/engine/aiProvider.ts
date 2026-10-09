@@ -11,6 +11,7 @@ import {
   JobSpecificCV,
   JobPreferences,
   MasterCV,
+  TaskModelConfig,
   AITaskLogEntry
 } from '../types/job';
 import { providerManager } from './providers/providerManager';
@@ -28,6 +29,7 @@ export interface AIProviderConfig {
   temperature: number;
   apiKey?: string;
   isAvailable: boolean;
+  taskModels?: TaskModelConfig;
 }
 
 /**
@@ -50,9 +52,16 @@ export class ModularAIProvider {
 
   constructor() {
     this.config = {
-      modelName: 'system-managed',
+      modelName: 'gemini-2.5-flash',
       temperature: 0.1,
-      isAvailable: providerManager.isAIAvailable()
+      isAvailable: providerManager.isAIAvailable(),
+      taskModels: {
+        extractionModel: 'google-gemini-2.5-flash',
+        matchingModel: 'google-gemini-2.5-flash',
+        generationModel: 'google-gemini-2.5-flash',
+        parsingModel: 'google-gemini-2.5-flash',
+        temperature: 0.1
+      }
     };
   }
 
@@ -66,6 +75,9 @@ export class ModularAIProvider {
 
   public setConfig(newConfig: Partial<AIProviderConfig>): void {
     this.config = { ...this.config, ...newConfig };
+    if (newConfig.apiKey) {
+      providerManager.setCredentials({ googleApiKey: newConfig.apiKey });
+    }
   }
 
   public isAIAvailable(): boolean {
@@ -85,7 +97,7 @@ export class ModularAIProvider {
     fileType: 'pdf' | 'docx' | 'txt' | 'text' = 'text'
   ): Promise<MasterProfile> {
     const startTime = Date.now();
-    const model = 'system-managed';
+    const model = this.config.taskModels?.parsingModel || this.config.modelName;
 
     if (this.isAIAvailable()) {
       try {
@@ -1034,10 +1046,11 @@ Return ONLY valid JSON array matching the schema:
    */
   async generateMasterCV(
     masterProfile: MasterProfile,
-    preferences: JobPreferences
+    preferences: JobPreferences,
+    modelName?: string
   ): Promise<MasterCV> {
     const startTime = Date.now();
-    const activeModel = 'system-managed';
+    const activeModel = modelName || this.config.taskModels?.generationModel || this.config.modelName;
 
     let markdown = '';
 
@@ -1144,7 +1157,8 @@ ${masterProfile.structuredData?.strictBoundaries?.map(b => `* ${b}`).join('\n') 
    */
   async generateCVVariantFromPathway(
     pathway: CareerPathway,
-    masterProfile: MasterProfile
+    masterProfile: MasterProfile,
+    modelName?: string
   ): Promise<CVVariant> {
     const variantId = `cv_variant_${pathway.id.replace(/[^a-zA-Z0-9]/g, '_')}`;
     const variantName = `${pathway.title} CV`;
@@ -1180,9 +1194,10 @@ ${masterProfile.structuredData?.strictBoundaries?.map(b => `* ${b}`).join('\n') 
     job: Job,
     selectedCV: CVVariant,
     masterProfile: MasterProfile,
-    preferences: JobPreferences
+    preferences: JobPreferences,
+    modelName?: string
   ): Promise<JobSpecificCV> {
-    const activeModel = 'system-managed';
+    const activeModel = modelName || this.config.modelName;
     const alignedRequirements = job.requirementEvaluations?.filter(r => r.status === 'DIRECT' || r.status === 'TRANSFERABLE') || [];
     const directEvidence = job.evidenceMatch?.direct || [];
 

@@ -250,7 +250,7 @@ export interface CandidatePersonalDetails {
   currentLocation: string;
   eligibleCountries: string[];
   workAuthorization: string;
-  remotePreference: RemotePreference;
+  remotePreference: 'REMOTE_ONLY' | 'REMOTE_OK' | 'HYBRID_OK' | 'ONSITE_OK';
   relocationWillingness: boolean;
   travelWillingness?: string;
   employmentTypePreferences?: string[];
@@ -615,51 +615,25 @@ export interface MasterCV {
 }
 
 // Section 6: Candidate Preferences & Constraints
-export type RemotePreference =
-  | 'REMOTE_ONLY'
-  | 'REMOTE_PREFERRED'
-  | 'REMOTE_OK'
-  | 'HYBRID_OK'
-  | 'FLEXIBLE'
-  | 'ONSITE_OK';
-
-export type TransferabilityPolicy =
-  | 'STRICT'
-  | 'MODERATE'
-  | 'FLEXIBLE'
-  | 'CONSERVATIVE'
-  | 'BALANCED'
-  | 'AGGRESSIVE';
-
 export interface JobPreferences {
   targetRoles: string[];
   targetSeniority: string[];
   targetDomains?: string[];
-  targetIndustries?: string[];
   preferredIndustries: string[];
   excludedIndustries: string[];
   preferredLocations: string[];
-  remotePreference: RemotePreference;
-  eligibleCountries: string[];
-  workAuthorizationCountries?: string[];
+  remotePreference: 'REMOTE_ONLY' | 'REMOTE_OK' | 'HYBRID_OK' | 'ONSITE_OK';
+  eligibleCountries: string[]; // countries candidate is legally permitted to work from
   workAuthorizations: string[];
-  salaryMin?: number | null;
-  salaryMax?: number | null;
-  salaryCurrency?: string;
-  salaryPeriod?: 'HOUR' | 'MONTH' | 'YEAR' | 'CONTRACT' | 'UNSPECIFIED';
   salaryExpectation?: string;
-  employmentTypes?: string[];
   excludedJobTypes: string[];
-  maxApplicationFee: number;
+  maxApplicationFee: number; // default 0 ($0 policy)
   willingToRelocate: boolean;
-  preferredTerminology?: string[];
-  avoidedTerminology?: string[];
+  notes?: string;
   terminologyPreferences?: { prefer: string[]; avoid: string[] };
-  transferabilityPolicy?: TransferabilityPolicy;
+  transferabilityPolicy?: 'CONSERVATIVE' | 'BALANCED' | 'AGGRESSIVE';
   evidenceEmphasis?: string[];
   evidenceExclusions?: string[];
-  otherSearchConstraints?: string[];
-  notes?: string;
 }
 
 export interface CareerPathway {

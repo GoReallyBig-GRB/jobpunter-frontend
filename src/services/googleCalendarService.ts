@@ -23,7 +23,7 @@ const CALENDAR_API_URL = 'https://www.googleapis.com/calendar/v3/calendars/prima
  * Lists upcoming calendar events from the primary calendar.
  */
 export async function listCalendarEvents(maxResults: number = 20): Promise<CalendarEvent[]> {
-  const token = await getAccessToken('calendar');
+  const token = await getAccessToken();
   if (!token) throw new Error('Authentication required. Please sign in with Google to access Google Calendar.');
 
   const now = new Date().toISOString();
@@ -53,7 +53,7 @@ export async function createCalendarEvent(
   description?: string,
   location?: string
 ): Promise<CalendarEvent> {
-  const token = await getAccessToken('calendar');
+  const token = await getAccessToken();
   if (!token) throw new Error('Authentication required.');
 
   const eventPayload = {
@@ -99,7 +99,7 @@ export async function createCalendarEvent(
  * (MANDATORY: Requires explicit user confirmation dialog before calling)
  */
 export async function deleteCalendarEvent(eventId: string): Promise<boolean> {
-  const token = await getAccessToken('calendar');
+  const token = await getAccessToken();
   if (!token) throw new Error('Authentication required.');
 
   const res = await fetch(`${CALENDAR_API_URL}/${eventId}`, {

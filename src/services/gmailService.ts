@@ -17,7 +17,7 @@ const GMAIL_API_URL = 'https://gmail.googleapis.com/gmail/v1/users/me';
  * Searches messages in candidate's Gmail inbox for job alerts and opportunities.
  */
 export async function searchGmailMessages(query: string = 'subject:job OR subject:career OR from:linkedin OR from:indeed OR from:wellfound', maxResults: number = 15): Promise<GmailMessageSummary[]> {
-  const token = await getAccessToken('gmail');
+  const token = await getAccessToken();
   if (!token) throw new Error('Authentication required. Please sign in with Google to access Gmail.');
 
   const listUrl = `${GMAIL_API_URL}/messages?q=${encodeURIComponent(query)}&maxResults=${maxResults}`;
@@ -54,7 +54,7 @@ export async function searchGmailMessages(query: string = 'subject:job OR subjec
  * Fetches detail of an individual Gmail message.
  */
 export async function getGmailMessageDetail(messageId: string): Promise<GmailMessageSummary> {
-  const token = await getAccessToken('gmail');
+  const token = await getAccessToken();
   if (!token) throw new Error('Authentication required.');
 
   const res = await fetch(`${GMAIL_API_URL}/messages/${messageId}?format=full`, {
@@ -130,7 +130,7 @@ function extractTextFromParts(parts: any[]): string {
  * MANDATORY: Call this ONLY after explicit candidate confirmation dialog!
  */
 export async function sendEmail(to: string, subject: string, bodyText: string): Promise<{ id: string }> {
-  const token = await getAccessToken('gmail');
+  const token = await getAccessToken();
   if (!token) throw new Error('Authentication required.');
 
   // Construct standard RFC 2822 message

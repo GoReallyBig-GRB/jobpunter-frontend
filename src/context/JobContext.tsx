@@ -1,7 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../services/firebase';
-import { ApiError, getCandidatePreferences, saveCandidatePreferences, type CandidatePreferencesSnapshot } from '../services/apiClient';
 import { 
   Job, 
   SourceEmail, 
@@ -93,11 +90,6 @@ export interface JobContextType {
   importProfileDocument: (fileName: string, fileType: 'pdf' | 'docx' | 'txt' | 'text', rawContent: string) => Promise<MasterProfile>;
   commitImportedProfile: (profile: MasterProfile) => void;
   updatePreferences: (newPrefs: Partial<JobPreferences>) => void;
-  savePreferences: (preferencesToSave?: JobPreferences) => Promise<boolean>;
-  preferencesRevision: number | null;
-  preferencesStatus: 'signed_out' | 'loading' | 'ready' | 'saving' | 'error' | 'conflict';
-  preferencesError: string | null;
-  hasSavedPreferences: boolean;
   
   // Pathway Discovery & Editorial Control (AI suggests, candidate decides)
   generateCareerPathwaysWithAI: () => Promise<CareerPathway[]>;
@@ -167,27 +159,13 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return PRESET_PRODUCT_MANAGER.masterProfile;
   });
 
-  const emptyPreferences: JobPreferences = {
-    targetRoles: [],
-    targetSeniority: [],
-    preferredIndustries: [],
-    excludedIndustries: [],
-    preferredLocations: [],
-    remotePreference: 'REMOTE_OK',
-    eligibleCountries: [],
-    workAuthorizations: [],
-    excludedJobTypes: [],
-    maxApplicationFee: 0,
-    willingToRelocate: false
-  };
-  // Preferences are account-scoped server data. Never hydrate them from localStorage.
-  const [preferences, setPreferences] = useState<JobPreferences>(emptyPreferences);
-  const [preferencesRevision, setPreferencesRevision] = useState<number | null>(null);
-  const [preferencesStatus, setPreferencesStatus] = useState<'signed_out' | 'loading' | 'ready' | 'saving' | 'error' | 'conflict'>(
-    auth.currentUser ? 'loading' : 'signed_out'
-  );
-  const [preferencesError, setPreferencesError] = useState<string | null>(null);
-  const [hasSavedPreferences, setHasSavedPreferences] = useState(false);
+  const [preferences, setPreferences] = useState<JobPreferences>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { console.error(e); }
+    }
+    return PRESET_PRODUCT_MANAGER.preferences;
+  });
 
   const [careerPathways, setCareerPathways] = useState<CareerPathway[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PATHWAYS);
@@ -300,6 +278,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [masterProfile]);
 
   useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(preferences));
+  }, [preferences]);
+
+  useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PATHWAYS, JSON.stringify(careerPathways));
   }, [careerPathways]);
 
@@ -310,88 +292,6 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.MASTER_CV, JSON.stringify(masterCV));
   }, [masterCV]);
-
-  // Load authoritative preferences on every auth transition. Request generations
-  // prevent a slow response for account A from updating account B's session.
-  useEffect(() => {
-    let generation = 0;
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      const currentGeneration = ++generation;
-      setPreferences(emptyPreferences);
-      setPreferencesRevision(null);
-      setHasSavedPreferences(false);
-      setPreferencesError(null);
-      if (!user) {
-        setPreferencesStatus('signed_out');
-        return;
-      }
-      setPreferencesStatus('loading');
-      getCandidatePreferences().then((snapshot) => {
-        if (currentGeneration !== generation || auth.currentUser?.uid !== user.uid) return;
-        setPreferences(snapshot.preferences);
-        setPreferencesRevision(snapshot.revision);
-        setHasSavedPreferences(snapshot.revision > 0);
-        setPreferencesStatus('ready');
-      }).catch((error: unknown) => {
-        if (currentGeneration !== generation || auth.currentUser?.uid !== user.uid) return;
-        setPreferencesStatus('error');
-        setPreferencesError(error instanceof Error ? error.message : 'Could not load preferences from the server.');
-      });
-    });
-    return () => {
-      generation += 1;
-      unsubscribe();
-    };
-  // emptyPreferences is a stable logical default; this subscription should live for the provider lifetime.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const persistPreferences = async (nextPreferences: JobPreferences): Promise<boolean> => {
-    const user = auth.currentUser;
-    const expectedRevision = preferencesRevision;
-    if (!user) {
-      setPreferencesStatus('signed_out');
-      setPreferencesError('Sign in before saving candidate preferences.');
-      return false;
-    }
-    if (expectedRevision === null || preferencesStatus === 'loading') {
-      setPreferencesError('Preferences are not ready to save. Reload them before trying again.');
-      return false;
-    }
-    setPreferencesStatus('saving');
-    setPreferencesError(null);
-    try {
-      const snapshot: CandidatePreferencesSnapshot = await saveCandidatePreferences(nextPreferences, expectedRevision);
-      if (auth.currentUser?.uid !== user.uid) return false;
-      setPreferences(snapshot.preferences);
-      setPreferencesRevision(snapshot.revision);
-      setHasSavedPreferences(snapshot.revision > 0);
-      setPreferencesStatus('ready');
-      return true;
-    } catch (error) {
-      if (auth.currentUser?.uid !== user.uid) return false;
-      if (error instanceof ApiError && error.status === 409) {
-        setPreferencesStatus('conflict');
-        setPreferencesError('These preferences changed on the server since you loaded them. The latest server version is being reloaded; review it before saving again.');
-        try {
-          const latest = await getCandidatePreferences();
-          if (auth.currentUser?.uid === user.uid) {
-            setPreferences(latest.preferences);
-            setPreferencesRevision(latest.revision);
-            setHasSavedPreferences(latest.revision > 0);
-          }
-        } catch {
-          // Keep the conflict visible; never claim the stale write succeeded.
-        }
-      } else {
-        setPreferencesStatus('error');
-        setPreferencesError(error instanceof Error ? error.message : 'Saving preferences failed.');
-      }
-      return false;
-    }
-  };
-
-  const savePreferences = (preferencesToSave: JobPreferences = preferences) => persistPreferences(preferencesToSave);
 
   // Refresh AI task logs periodically
   useEffect(() => {
@@ -405,12 +305,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // -------------------------------------------------------------
   // Candidate Preset Switching & Agnostic Re-Evaluation
   // -------------------------------------------------------------
-  const switchCandidatePreset = async (presetId: string) => {
-    const target = presetId === 'none' ? null : ALL_CANDIDATE_PRESETS.find(p => p.id === presetId);
-    if (presetId !== 'none' && !target) return;
-    const presetPreferences = target?.preferences ?? emptyPreferences;
-    const persisted = await persistPreferences({ ...preferences, ...presetPreferences });
-    if (!persisted) return;
+  const switchCandidatePreset = (presetId: string) => {
     if (presetId === 'none') {
       setActivePresetId('none');
       const emptyProfile: MasterProfile = {
@@ -436,16 +331,31 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updatedAt: new Date().toISOString()
       };
       setMasterProfile(emptyProfile);
+      setPreferences({
+        targetRoles: [],
+        targetSeniority: [],
+        preferredIndustries: [],
+        excludedIndustries: [],
+        preferredLocations: [],
+        remotePreference: 'REMOTE_OK',
+        eligibleCountries: [],
+        workAuthorizations: [],
+        excludedJobTypes: [],
+        maxApplicationFee: 0,
+        willingToRelocate: false
+      });
       setCareerPathways([]);
       setCvVariants([]);
       setMasterCV(null);
       return;
     }
 
+    const target = ALL_CANDIDATE_PRESETS.find(p => p.id === presetId);
     if (!target) return;
 
     setActivePresetId(presetId);
     setMasterProfile(target.masterProfile);
+    setPreferences(target.preferences);
     setCareerPathways(target.careerPathways);
     setCvVariants(target.cvVariants);
     setMasterCV(target.masterCV || null);
@@ -578,7 +488,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // CV Studio & Generation
   // -------------------------------------------------------------
   const generateMasterCVWithAI = async (): Promise<MasterCV> => {
-    const mcv = await aiProvider.generateMasterCV(masterProfile, preferences);
+    const mcv = await aiProvider.generateMasterCV(masterProfile, preferences, settings.taskModels.generationModel);
     setMasterCV(mcv);
     return mcv;
   };
@@ -594,7 +504,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const generateCVVariantForPathway = async (pathwayId: string): Promise<CVVariant> => {
     const pathway = careerPathways.find(p => p.id === pathwayId) || careerPathways[0];
-    const variant = await aiProvider.generateCVVariantFromPathway(pathway, masterProfile);
+    const variant = await aiProvider.generateCVVariantFromPathway(pathway, masterProfile, settings.taskModels.generationModel);
     variant.pathwayId = pathway.id;
     variant.candidateApproved = true;
     
@@ -675,7 +585,8 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       targetVariant,
       masterProfile,
       preferences,
-      );
+      settings.taskModels.generationModel
+    );
 
     setJobs(prev => prev.map(j => {
       if (j.id === jobId) {
@@ -1350,11 +1261,6 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         importProfileDocument,
         commitImportedProfile,
         updatePreferences,
-        savePreferences,
-        preferencesRevision,
-        preferencesStatus,
-        preferencesError,
-        hasSavedPreferences,
 
         // Pathways
         generateCareerPathwaysWithAI,
