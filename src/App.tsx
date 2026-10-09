@@ -24,7 +24,7 @@ import { DocumentIngestModal } from './components/DocumentIngestModal';
 import { GoogleWorkspaceView } from './components/GoogleWorkspaceView';
 
 function AppContent() {
-  const { masterProfile } = useJobs();
+  const { masterProfile, preferencesStatus, preferencesError } = useJobs();
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [selectedJobIdForModal, setSelectedJobIdForModal] = useState<string | null>(null);
   const [preselectedReviewId, setPreselectedReviewId] = useState<string | null>(null);
@@ -108,6 +108,14 @@ function AppContent() {
           title={title}
           subtitle={subtitle}
         />
+
+        {/* Surface preference persistence failures even when triggered by a candidate preset. */}
+        {(preferencesStatus === 'error' || preferencesStatus === 'conflict') && (
+          <div role="alert" className="mx-4 mt-3 rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-900 sm:mx-6 lg:mx-8">
+            <strong>{preferencesStatus === 'conflict' ? 'Candidate preferences changed on the server.' : 'Candidate preferences could not be saved or loaded.'}</strong>
+            <p className="mt-1">{preferencesError || 'Review the preferences page and retry after resolving the issue.'}</p>
+          </div>
+        )}
 
         {/* View Content */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
