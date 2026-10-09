@@ -32,3 +32,21 @@ It was a foundation slice, not a complete backend. It contained:
 **Extraction is structurally complete; product parity is not certified.** CI success proves the current checks pass, not that every legacy function works end to end. Do not claim production readiness until the parity audit's acceptance criteria and live staging journey checks pass.
 
 No branch has been merged into `main`.
+
+
+## Branch-level boundary verification (2026-10-09)
+
+Checked these paths directly on `migration/vite-to-nextjs`:
+
+| Path | Observed result | Meaning |
+|---|---|---|
+| `backend/app/main.py` | Not found (404) | Legacy FastAPI implementation is no longer in the frontend repository. |
+| `backend/pyproject.toml` | Not found (404) | Legacy backend package/config is no longer in the frontend repository. |
+| `backend/migrations/env.py` | Not found (404) | Legacy Alembic config is no longer in the frontend repository. |
+| `firestore.rules` | Not found (404) | Legacy Firestore rules file is removed. |
+| `src/engine/aiProvider.ts` | Still present; blob `fdeca25ea4171e1a544ee6cccd8838079bbe714a` | AI/domain behavior remains in the frontend and must be mapped before removal. |
+| `src/engine/evaluator.ts` | Still present; blob `2c673aa2f73b3d37f286a73568e1c0b9c8052514` | Candidate-agnostic evaluation and hard eligibility rules remain in the frontend. |
+| `src/engine/emailParser.ts` | Still present; blob `354fd5d30fc7df387c3a11a7ac45f9fbdd70b17a` | Job-alert parsing remains in the frontend. |
+| `src/engine/providers/providerManager.ts` | Still present; blob `2fef55d83d5d8777dab7cb806d6e5a6d8c63ee7a` | Provider/model management code remains in the frontend; candidate-controlled provider configuration must not be migrated as-is. |
+
+This confirms **repository boundary cleanup for the legacy `backend/` directory only**. It does not confirm product parity. The remaining TypeScript engine modules are explicit migration blockers; do not remove them until their behavior has a tested FastAPI equivalent or a documented product decision to defer/retain it.
