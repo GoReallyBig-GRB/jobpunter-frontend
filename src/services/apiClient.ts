@@ -64,14 +64,65 @@ export interface CandidatePreferencesSnapshot {
   preferences: JobPreferences;
 }
 
-export async function getCandidatePreferences(): Promise<CandidatePreferencesSnapshot> {
-  const snapshot = await apiRequest<CandidatePreferencesSnapshot>(
-    '/api/v1/candidate/preferences'
-  );
-  if (!Number.isInteger(snapshot.revision) || snapshot.revision < 0 || !snapshot.preferences) {
+type BackendPreferences = Omit<Partial<JobPreferences>, 'remotePreference' | 'transferabilityPolicy'> & {
+  remotePreference?: string;
+  transferabilityPolicy?: string;
+};
+
+function normalizePreferencesSnapshot(value: unknown, minimumRevision: number): CandidatePreferencesSnapshot {
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    !('revision' in value) ||
+    !('preferences' in value)
+  ) {
     throw new Error('The backend returned an invalid candidate-preferences response.');
   }
-  return snapshot;
+
+  const snapshot = value as { revision: unknown; preferences: unknown };
+  if (
+    !Number.isInteger(snapshot.revision) ||
+    (snapshot.revision as number) < minimumRevision ||
+    typeof snapshot.preferences !== 'object' ||
+    snapshot.preferences === null
+  ) {
+    throw new Error('The backend returned an invalid candidate-preferences response.');
+  }
+
+  const backendPreferences = snapshot.preferences as BackendPreferences;
+  const remotePreference =
+    backendPreferences.remotePreference === 'FLEXIBLE'
+      ? 'REMOTE_OK'
+      : backendPreferences.remotePreference;
+  const transferabilityPolicy =
+    backendPreferences.transferabilityPolicy === 'MODERATE'
+      ? 'BALANCED'
+      : backendPreferences.transferabilityPolicy;
+
+  const validRemotePreferences = ['REMOTE_ONLY', 'REMOTE_OK', 'HYBRID_OK', 'ONSITE_OK'];
+  const validTransferabilityPolicies = ['CONSERVATIVE', 'BALANCED', 'AGGRESSIVE'];
+  if (
+    (remotePreference !== undefined && !validRemotePreferences.includes(remotePreference)) ||
+    (transferabilityPolicy !== undefined && !validTransferabilityPolicies.includes(transferabilityPolicy))
+  ) {
+    throw new Error('The backend returned an unsupported candidate-preference option.');
+  }
+
+  return {
+    revision: snapshot.revision as number,
+    preferences: {
+      ...backendPreferences,
+      ...(remotePreference ? { remotePreference: remotePreference as JobPreferences['remotePreference'] } : {}),
+      ...(transferabilityPolicy
+        ? { transferabilityPolicy: transferabilityPolicy as JobPreferences['transferabilityPolicy'] }
+        : {})
+    } as JobPreferences
+  };
+}
+
+export async function getCandidatePreferences(): Promise<CandidatePreferencesSnapshot> {
+  const snapshot = await apiRequest<unknown>('/api/v1/candidate/preferences');
+  return normalizePreferencesSnapshot(snapshot, 0);
 }
 
 export async function saveCandidatePreferences(
@@ -81,15 +132,12 @@ export async function saveCandidatePreferences(
   if (!Number.isInteger(expectedRevision) || expectedRevision < 0) {
     throw new Error('A valid preference revision is required before saving.');
   }
-  const snapshot = await apiRequest<CandidatePreferencesSnapshot>(
+  const snapshot = await apiRequest<unknown>(
     '/api/v1/candidate/preferences',
     {
       method: 'PUT',
       body: JSON.stringify({ expectedRevision, preferences })
     }
   );
-  if (!Number.isInteger(snapshot.revision) || snapshot.revision <= expectedRevision || !snapshot.preferences) {
-    throw new Error('The backend returned an invalid saved-preferences response.');
-  }
-  return snapshot;
+  return normalizePreferencesSnapshot(snapshot, expectedRevision + 1);
 }
