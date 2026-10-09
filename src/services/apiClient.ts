@@ -64,18 +64,15 @@ export interface CandidatePreferencesSnapshot {
   preferences: JobPreferences;
 }
 
-type BackendPreferences = Omit<Partial<JobPreferences>, 'remotePreference' | 'transferabilityPolicy'> & {
-  remotePreference?: string;
-  transferabilityPolicy?: string;
-};
+const VALID_REMOTE_PREFERENCES: readonly string[] = [
+  'REMOTE_ONLY', 'REMOTE_PREFERRED', 'REMOTE_OK', 'HYBRID_OK', 'FLEXIBLE', 'ONSITE_OK'
+];
+const VALID_TRANSFERABILITY_POLICIES: readonly string[] = [
+  'STRICT', 'MODERATE', 'FLEXIBLE', 'CONSERVATIVE', 'BALANCED', 'AGGRESSIVE'
+];
 
 function normalizePreferencesSnapshot(value: unknown, minimumRevision: number): CandidatePreferencesSnapshot {
-  if (
-    typeof value !== 'object' ||
-    value === null ||
-    !('revision' in value) ||
-    !('preferences' in value)
-  ) {
+  if (typeof value !== 'object' || value === null || !('revision' in value) || !('preferences' in value)) {
     throw new Error('The backend returned an invalid candidate-preferences response.');
   }
 
@@ -84,39 +81,29 @@ function normalizePreferencesSnapshot(value: unknown, minimumRevision: number): 
     !Number.isInteger(snapshot.revision) ||
     (snapshot.revision as number) < minimumRevision ||
     typeof snapshot.preferences !== 'object' ||
-    snapshot.preferences === null
+    snapshot.preferences === null ||
+    Array.isArray(snapshot.preferences)
   ) {
     throw new Error('The backend returned an invalid candidate-preferences response.');
   }
 
-  const backendPreferences = snapshot.preferences as BackendPreferences;
-  const remotePreference =
-    backendPreferences.remotePreference === 'FLEXIBLE'
-      ? 'REMOTE_OK'
-      : backendPreferences.remotePreference;
-  const transferabilityPolicy =
-    backendPreferences.transferabilityPolicy === 'MODERATE'
-      ? 'BALANCED'
-      : backendPreferences.transferabilityPolicy;
-
-  const validRemotePreferences = ['REMOTE_ONLY', 'REMOTE_OK', 'HYBRID_OK', 'ONSITE_OK'];
-  const validTransferabilityPolicies = ['CONSERVATIVE', 'BALANCED', 'AGGRESSIVE'];
+  const backendPreferences = snapshot.preferences as Record<string, unknown>;
+  const remotePreference = backendPreferences.remotePreference;
+  const transferabilityPolicy = backendPreferences.transferabilityPolicy;
   if (
-    (remotePreference !== undefined && !validRemotePreferences.includes(remotePreference)) ||
-    (transferabilityPolicy !== undefined && !validTransferabilityPolicies.includes(transferabilityPolicy))
+    (remotePreference !== undefined &&
+      (typeof remotePreference !== 'string' || !VALID_REMOTE_PREFERENCES.includes(remotePreference))) ||
+    (transferabilityPolicy !== undefined &&
+      (typeof transferabilityPolicy !== 'string' || !VALID_TRANSFERABILITY_POLICIES.includes(transferabilityPolicy)))
   ) {
     throw new Error('The backend returned an unsupported candidate-preference option.');
   }
 
+  // Preserve the backend payload as-is. Unknown/future fields are retained so a
+  // partial frontend edit cannot erase fields the UI does not currently expose.
   return {
     revision: snapshot.revision as number,
-    preferences: {
-      ...backendPreferences,
-      ...(remotePreference ? { remotePreference: remotePreference as JobPreferences['remotePreference'] } : {}),
-      ...(transferabilityPolicy
-        ? { transferabilityPolicy: transferabilityPolicy as JobPreferences['transferabilityPolicy'] }
-        : {})
-    } as JobPreferences
+    preferences: { ...backendPreferences } as unknown as JobPreferences
   };
 }
 
