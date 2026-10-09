@@ -436,7 +436,6 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updatedAt: new Date().toISOString()
       };
       setMasterProfile(emptyProfile);
-      setPreferences(presetPreferences);
       setCareerPathways([]);
       setCvVariants([]);
       setMasterCV(null);
@@ -447,7 +446,6 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setActivePresetId(presetId);
     setMasterProfile(target.masterProfile);
-    setPreferences(target.preferences);
     setCareerPathways(target.careerPathways);
     setCvVariants(target.cvVariants);
     setMasterCV(target.masterCV || null);
