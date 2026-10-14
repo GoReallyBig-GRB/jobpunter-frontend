@@ -4,13 +4,15 @@ export type TaskType =
   | 'document_parsing'
   | 'profile_extraction'
   | 'jd_extraction'
+  | 'job_requirement_extraction'
   | 'requirement_classification'
   | 'evidence_matching'
   | 'career_pathway_discovery'
   | 'cv_generation'
   | 'cover_letter'
   | 'application_questions'
-  | 'suggested_answers';
+  | 'suggested_answers'
+  | 'claim_evidence_validation';
 
 export interface AIModelDefinition {
   id: string;
