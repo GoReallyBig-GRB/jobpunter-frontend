@@ -5,6 +5,8 @@ import { apiRequest } from './apiClient';
  * Keep these fields aligned with app/application/ai/input_contracts.py.
  * The backend remains authoritative and rejects unknown or invalid fields.
  */
+export const BACKEND_AI_INPUT_CONTRACT_VERSION = 'v4' as const;
+
 export interface BackendApprovedEvidenceInput {
   id: string;
   type: string;
@@ -31,7 +33,13 @@ export interface BackendClassifiableRequirementInput {
 }
 
 export interface BackendCandidateMatchingPreferences {
-  transferability_policy?: 'STRICT' | 'MODERATE' | 'FLEXIBLE' | 'CONSERVATIVE' | 'BALANCED' | 'AGGRESSIVE';
+  transferability_policy?:
+    | 'STRICT'
+    | 'MODERATE'
+    | 'FLEXIBLE'
+    | 'CONSERVATIVE'
+    | 'BALANCED'
+    | 'AGGRESSIVE';
   evidence_emphasis?: string[];
   preferred_terminology?: string[];
   avoided_terminology?: string[];
@@ -53,18 +61,77 @@ export interface BackendClaimEvidenceRecordInput {
 }
 
 export interface BackendAITaskInputMap {
-  document_parsing: { document_text: string };
-  profile_extraction: { source_text: string; existing_profile?: Record<string, unknown>; instruction?: string | null };
-  jd_extraction: { job_title?: string | null; employer?: string | null; job_description: string };
-  job_requirement_extraction: { job_title?: string | null; employer?: string | null; job_description: string };
-  requirement_classification: { job_description: string; requirements: BackendClassifiableRequirementInput[]; instruction?: string | null };
-  evidence_matching: { job_title?: string | null; employer?: string | null; job_description_version_id: string; requirements: BackendMatchingRequirementInput[]; approved_candidate_evidence: BackendApprovedEvidenceInput[]; candidate_preferences?: BackendCandidateMatchingPreferences; instruction: string };
-  career_pathway_discovery: { candidate_profile?: Record<string, unknown>; approved_candidate_evidence: BackendApprovedEvidenceInput[]; current_target_roles?: string[]; instruction?: string | null };
-  cv_generation: { candidate_profile?: Record<string, unknown>; approved_candidate_evidence: BackendApprovedEvidenceInput[]; target_role?: string | null; job_description?: string | null; instruction?: string | null };
-  cover_letter: { job_title: string; employer: string; job_description: string; candidate_profile?: Record<string, unknown>; approved_candidate_evidence: BackendApprovedEvidenceInput[]; instruction?: string | null };
-  application_questions: { job_title: string; employer: string; job_description: string; approved_candidate_evidence: BackendApprovedEvidenceInput[]; known_questions?: string[]; instruction?: string | null };
-  suggested_answers: { questions: string[]; approved_candidate_evidence: BackendApprovedEvidenceInput[]; job_context?: Record<string, unknown>; instruction?: string | null };
-  claim_evidence_validation: { artifacts: BackendApplicationArtifactInput[]; approved_candidate_evidence: BackendClaimEvidenceRecordInput[] };
+  document_parsing: {
+    document_text: string;
+  };
+  profile_extraction: {
+    source_text: string;
+    existing_profile?: Record<string, unknown>;
+    instruction?: string | null;
+  };
+  jd_extraction: {
+    job_title?: string | null;
+    employer?: string | null;
+    job_description: string;
+  };
+  job_requirement_extraction: {
+    job_title?: string | null;
+    employer?: string | null;
+    job_description: string;
+  };
+  requirement_classification: {
+    job_description: string;
+    requirements: BackendClassifiableRequirementInput[];
+    instruction?: string | null;
+  };
+  evidence_matching: {
+    job_title?: string | null;
+    employer?: string | null;
+    job_description_version_id: string;
+    requirements: BackendMatchingRequirementInput[];
+    approved_candidate_evidence: BackendApprovedEvidenceInput[];
+    candidate_preferences?: BackendCandidateMatchingPreferences;
+    instruction: string;
+  };
+  career_pathway_discovery: {
+    candidate_profile?: Record<string, unknown>;
+    approved_candidate_evidence: BackendApprovedEvidenceInput[];
+    current_target_roles?: string[];
+    instruction?: string | null;
+  };
+  cv_generation: {
+    candidate_profile?: Record<string, unknown>;
+    approved_candidate_evidence: BackendApprovedEvidenceInput[];
+    target_role?: string | null;
+    job_description?: string | null;
+    instruction?: string | null;
+  };
+  cover_letter: {
+    job_title: string;
+    employer: string;
+    job_description: string;
+    candidate_profile?: Record<string, unknown>;
+    approved_candidate_evidence: BackendApprovedEvidenceInput[];
+    instruction?: string | null;
+  };
+  application_questions: {
+    job_title: string;
+    employer: string;
+    job_description: string;
+    approved_candidate_evidence: BackendApprovedEvidenceInput[];
+    known_questions?: string[];
+    instruction?: string | null;
+  };
+  suggested_answers: {
+    questions: string[];
+    approved_candidate_evidence: BackendApprovedEvidenceInput[];
+    job_context?: Record<string, unknown>;
+    instruction?: string | null;
+  };
+  claim_evidence_validation: {
+    artifacts: BackendApplicationArtifactInput[];
+    approved_candidate_evidence: BackendClaimEvidenceRecordInput[];
+  };
 }
 
 export type BackendAITask = keyof BackendAITaskInputMap;
@@ -91,7 +158,10 @@ export interface BackendAIGenerateResponse<T = unknown> {
  * into the legacy prompt transport field because that is the current backend wire
  * format. Do not pass natural-language prompts to this method.
  */
-export async function generateBackendAITask<T = unknown, K extends BackendAITask = BackendAITask>(
+export async function generateBackendAITask<
+  K extends BackendAITask,
+  T = unknown
+>(
   task: K,
   input: BackendAITaskInputMap[K],
   options: BackendAIGenerateOptions = {}
