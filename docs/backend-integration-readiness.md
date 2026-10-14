@@ -6,6 +6,12 @@ The frontend continues to use its existing localStorage state and Firebase/Fires
 
 Firebase Authentication remains the user identity provider. Backend requests use Firebase ID tokens. Google Workspace OAuth access tokens are separate and must not be used as backend credentials.
 
+## Governed AI contract integration
+
+The backend exposes POST /api/v1/ai/generate. For tasks governed by input-contract v4, the prompt field must contain a JSON-serialized object matching that task's server-owned input schema; it is not a free-form natural-language prompt. The frontend's existing ModularAIProvider still invokes browser-side providers with free-form prompts, so those calls are not yet compatible with the governed backend endpoint and must not be switched over without task-by-task payload and output mapping.
+
+src/services/backendAi.ts provides a typed request boundary for all backend v4 task payloads and sends the structured object as JSON in prompt. It does not silently replace the existing local AI provider path or change current screen behavior. Migrating a screen requires explicit mapping from its source data into the relevant v4 input contract and from the backend's authoritative output contract into that screen's view model.
+
 ## Backend routes currently available
 
 | Frontend domain | Backend route(s) | Current coverage | Migration status |
