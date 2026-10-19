@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useJobs } from '../context/JobContext';
 import { 
   Sliders, 
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export const CareerPreferencesView: React.FC = () => {
-  const { preferences, updatePreferences, reEvaluateAllJobs } = useJobs();
+  const { preferences, savePreferences, preferencesRevision, preferencesStatus, preferencesError, hasSavedPreferences, reEvaluateAllJobs } = useJobs();
 
   const [savedSuccess, setSavedSuccess] = useState(false);
 
@@ -45,9 +45,25 @@ export const CareerPreferencesView: React.FC = () => {
   const [preferredLocations, setPreferredLocations] = useState<string[]>(preferences.preferredLocations || []);
   const [newLocation, setNewLocation] = useState('');
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    setRemotePref(preferences.remotePreference);
+    setSalaryExpectation(preferences.salaryExpectation || '');
+    setWillingToRelocate(preferences.willingToRelocate ?? false);
+    setMaxFee(preferences.maxApplicationFee ?? 0);
+    setNotes(preferences.notes || '');
+    setTargetRoles(preferences.targetRoles || []);
+    setTargetSeniority(preferences.targetSeniority || []);
+    setPreferredIndustries(preferences.preferredIndustries || []);
+    setExcludedIndustries(preferences.excludedIndustries || []);
+    setExcludedJobTypes(preferences.excludedJobTypes || []);
+    setPreferredLocations(preferences.preferredLocations || []);
+  }, [preferences]);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    updatePreferences({
+    setSavedSuccess(false);
+    const nextPreferences = {
+      ...preferences,
       remotePreference: remotePref,
       salaryExpectation,
       willingToRelocate,
@@ -59,10 +75,13 @@ export const CareerPreferencesView: React.FC = () => {
       excludedIndustries,
       excludedJobTypes,
       preferredLocations
-    });
-    reEvaluateAllJobs();
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2500);
+    };
+    const saved = await savePreferences(nextPreferences);
+    if (saved) {
+      reEvaluateAllJobs();
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 2500);
+    }
   };
 
   const addTag = (list: string[], setList: React.Dispatch<React.SetStateAction<string[]>>, val: string, clear: () => void) => {
@@ -95,6 +114,13 @@ export const CareerPreferencesView: React.FC = () => {
             </p>
           </div>
 
+          {preferencesStatus === 'loading' && <p role="status" className="text-xs text-blue-700">Loading your preferences from the server…</p>}
+          {preferencesStatus === 'saving' && <p role="status" className="text-xs text-blue-700">Saving preferences to the server…</p>}
+          {preferencesStatus === 'signed_out' && <p role="alert" className="text-xs text-amber-800">Sign in to load and save account preferences. Changes cannot be saved while signed out.</p>}
+          {preferencesStatus === 'error' && <p role="alert" className="text-xs text-rose-700">{preferencesError || 'Preferences could not be loaded or saved.'}</p>}
+          {preferencesStatus === 'conflict' && <p role="alert" className="text-xs text-rose-700">Revision conflict: {preferencesError || 'The server has newer preferences. Review the reloaded values before saving again.'}</p>}
+          {preferencesStatus === 'ready' && preferencesRevision === 0 && <p role="status" className="text-xs text-amber-800">These are backend defaults (revision 0), not a previously saved configuration. Save to create your first saved version.</p>}
+          {preferencesStatus === 'ready' && hasSavedPreferences && <p className="text-xs text-zinc-500">Loaded saved server preferences · revision {preferencesRevision}</p>}
           {savedSuccess && (
             <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-md flex items-center gap-1.5 animate-in fade-in">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -190,8 +216,10 @@ export const CareerPreferencesView: React.FC = () => {
                 className="w-full bg-white border border-zinc-300 rounded px-2.5 py-1.5 font-medium text-zinc-800"
               >
                 <option value="REMOTE_ONLY">Remote Only (Strict)</option>
-                <option value="REMOTE_OK">Remote Preferred / OK</option>
+                <option value="REMOTE_PREFERRED">Remote Preferred</option>
+                <option value="REMOTE_OK">Remote OK</option>
                 <option value="HYBRID_OK">Hybrid OK</option>
+                <option value="FLEXIBLE">Flexible</option>
                 <option value="ONSITE_OK">Onsite OK</option>
               </select>
             </div>
@@ -311,10 +339,11 @@ export const CareerPreferencesView: React.FC = () => {
         <div className="flex justify-end pt-2">
           <button
             type="submit"
-            className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-colors"
+            disabled={preferencesStatus === 'loading' || preferencesStatus === 'saving' || preferencesStatus === 'signed_out' || preferencesRevision === null}
+            className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-colors"
           >
             <Save className="w-4 h-4 text-emerald-400" />
-            Save Preferences &amp; Re-Evaluate Opportunities
+            Save Preferences to Server &amp; Re-Evaluate Opportunities
           </button>
         </div>
       </form>

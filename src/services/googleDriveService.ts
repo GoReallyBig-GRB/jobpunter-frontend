@@ -17,7 +17,7 @@ const UPLOAD_API_URL = 'https://www.googleapis.com/upload/drive/v3';
  * Lists files in Google Drive.
  */
 export async function listDriveFiles(query?: string, pageSize: number = 20): Promise<DriveFile[]> {
-  const token = await getAccessToken();
+  const token = await getAccessToken('drive');
   if (!token) throw new Error('Authentication required. Please sign in with Google to access Google Drive.');
 
   let q = "trashed = false";
@@ -44,7 +44,7 @@ export async function listDriveFiles(query?: string, pageSize: number = 20): Pro
  * Gets or creates a dedicated "JobPunter Career Materials" folder in Google Drive.
  */
 export async function getOrCreateJobPunterFolder(): Promise<string> {
-  const token = await getAccessToken();
+  const token = await getAccessToken('drive');
   if (!token) throw new Error('Authentication required. Please sign in with Google to access Google Drive.');
 
   // Check if folder already exists
@@ -91,7 +91,7 @@ export async function uploadFileToDrive(
   mimeType: string = 'text/plain',
   folderId?: string
 ): Promise<DriveFile> {
-  const token = await getAccessToken();
+  const token = await getAccessToken('drive');
   if (!token) throw new Error('Authentication required. Please sign in with Google to access Google Drive.');
 
   const targetFolderId = folderId || await getOrCreateJobPunterFolder();
@@ -131,7 +131,7 @@ export async function uploadFileToDrive(
  * Reads text content of a file from Google Drive.
  */
 export async function downloadFileContent(fileId: string): Promise<string> {
-  const token = await getAccessToken();
+  const token = await getAccessToken('drive');
   if (!token) throw new Error('Authentication required.');
 
   const res = await fetch(`${DRIVE_API_URL}/files/${fileId}?alt=media`, {
@@ -156,7 +156,7 @@ export async function downloadFileContent(fileId: string): Promise<string> {
  * Deletes a file from Google Drive (Mandatory user confirmation must be handled prior to invocation).
  */
 export async function deleteDriveFile(fileId: string): Promise<boolean> {
-  const token = await getAccessToken();
+  const token = await getAccessToken('drive');
   if (!token) throw new Error('Authentication required.');
 
   const res = await fetch(`${DRIVE_API_URL}/files/${fileId}`, {
