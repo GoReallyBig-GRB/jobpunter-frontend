@@ -1,0 +1,168 @@
+{
+  "version": "2026-11-19",
+  "authority": "frontend docs/candidate-ui/gap-register.json",
+  "allowed_statuses": [
+    "Open",
+    "Implemented",
+    "Verified",
+    "Closed"
+  ],
+  "gaps": [
+    {
+      "id": "CUI-001",
+      "title": "Candidate search still dispatches acquisition",
+      "priority": "High",
+      "scope": "backend",
+      "requirement_ids": [
+        "R01"
+      ],
+      "status": "Open",
+      "owner": null,
+      "acceptance_criteria": "Candidate search/schedules never invoke connectors; independently verify hourly central refresh.",
+      "baseline_evidence": "app/api/v1/discovery.py:171; app/workers/discovery_mission_worker.py:608",
+      "implementation_refs": [],
+      "verification_evidence": [],
+      "blockers": [],
+      "closure_decision": null
+    },
+    {
+      "id": "CUI-002",
+      "title": "Personal Job Pool admission and filter contract",
+      "priority": "High",
+      "scope": "both",
+      "requirement_ids": [
+        "R02"
+      ],
+      "status": "Open",
+      "owner": null,
+      "acceptance_criteria": "Current viable candidate records only; all requested filters/counts; stable paging; one job with multiple pathway assessments; no-CV search remains possible.",
+      "baseline_evidence": "app/application/jobs/job_pool_service.py:277; app/application/opportunities/service.py:60",
+      "implementation_refs": [],
+      "verification_evidence": [],
+      "blockers": [],
+      "closure_decision": null
+    },
+    {
+      "id": "CUI-003",
+      "title": "Non-Punt application creation",
+      "priority": "High",
+      "scope": "both",
+      "requirement_ids": [
+        "R02",
+        "R05"
+      ],
+      "status": "Open",
+      "owner": null,
+      "acceptance_criteria": "Create candidate-directed application without false Punt promotion; retain assessment/risk policy and no-CV boundary.",
+      "baseline_evidence": "app/application/opportunities/schemas.py:11; app/application/opportunities/service.py:802",
+      "implementation_refs": [],
+      "verification_evidence": [],
+      "blockers": [],
+      "closure_decision": null
+    },
+    {
+      "id": "CUI-004",
+      "title": "Pipeline stage mapping and per-application state",
+      "priority": "High",
+      "scope": "both",
+      "requirement_ids": [
+        "R07"
+      ],
+      "status": "Open",
+      "owner": null,
+      "acceptance_criteria": "Agreed stage/event mapping; two independent applications; audited corrections and revision conflicts; no submission on package approval.",
+      "baseline_evidence": "app/domain/opportunities/service.py:4; demo/source.html:1193",
+      "implementation_refs": [],
+      "verification_evidence": [],
+      "blockers": [],
+      "closure_decision": null
+    },
+    {
+      "id": "CUI-005",
+      "title": "Punt history, counts and watched login reminders",
+      "priority": "High",
+      "scope": "both",
+      "requirement_ids": [
+        "R06"
+      ],
+      "status": "Open",
+      "owner": null,
+      "acceptance_criteria": "Persistent disposition history; full-data timezone-correct counts; one reminder per fresh login; per-Punt 14-day inactivity suppression; retain saved records.",
+      "baseline_evidence": "app/api/v1/saved_jobs.py:19; demo/source.html:1336; demo/source.html:1377",
+      "implementation_refs": [],
+      "verification_evidence": [],
+      "blockers": [],
+      "closure_decision": null
+    },
+    {
+      "id": "CUI-006",
+      "title": "Mailbox monitoring and interview lifecycle",
+      "priority": "High",
+      "scope": "both",
+      "requirement_ids": [
+        "R07"
+      ],
+      "status": "Open",
+      "owner": null,
+      "acceptance_criteria": "Separate mailbox consent/revocation; attributed reviewed events; persisted practice attempts/results; repeat/end/resume; agreed two-reminder abandonment policy.",
+      "baseline_evidence": "app/api/v1/email_parser.py:22; demo/source.html:1298",
+      "implementation_refs": [],
+      "verification_evidence": [],
+      "blockers": [],
+      "closure_decision": null
+    },
+    {
+      "id": "CUI-007",
+      "title": "A4 rich-text/export parity",
+      "priority": "High",
+      "scope": "both",
+      "requirement_ids": [
+        "R05"
+      ],
+      "status": "Open",
+      "owner": null,
+      "acceptance_criteria": "Same approved content/formatting through preview, edit, save, DOCX/PDF export; actual A4 pages; safe rich text.",
+      "baseline_evidence": "app/application/documents/rendering.py:29; app/application/documents/rendering.py:177",
+      "implementation_refs": [],
+      "verification_evidence": [],
+      "blockers": [],
+      "closure_decision": null
+    },
+    {
+      "id": "CUI-008",
+      "title": "Resumable onboarding and approval orchestration",
+      "priority": "High",
+      "scope": "both",
+      "requirement_ids": [
+        "R03",
+        "R04",
+        "R05"
+      ],
+      "status": "Open",
+      "owner": null,
+      "acceptance_criteria": "CV approval matches retained results and preserves selected job; retry-safe save/approve; conflicts/partial failures visible; resume across devices.",
+      "baseline_evidence": "app/api/v1/cv_studio.py:62; app/api/v1/application_packages.py:49",
+      "implementation_refs": [],
+      "verification_evidence": [],
+      "blockers": [],
+      "closure_decision": null
+    },
+    {
+      "id": "CUI-009",
+      "title": "Saved-job visibility authorization",
+      "priority": "High",
+      "scope": "backend",
+      "requirement_ids": [
+        "R09"
+      ],
+      "status": "Open",
+      "owner": null,
+      "acceptance_criteria": "Apply canonical visibility rules on save and list; deny foreign manual records and revoked visibility; regression tests.",
+      "baseline_evidence": "app/api/v1/saved_jobs.py:56; app/application/jobs/access.py:64",
+      "implementation_refs": [],
+      "verification_evidence": [],
+      "blockers": [],
+      "closure_decision": null
+    }
+  ]
+}
