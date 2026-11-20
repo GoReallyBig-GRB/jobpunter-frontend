@@ -1,5 +1,13 @@
 # Frontend connection and Cloudflare Pages plan
 
+## Current staging decision - 20 November 2026
+
+Use `https://jobpunter-candidate.pages.dev/` as the owner-requested stable staging address. This is a separate Pages project connected only to the candidate handoff work. Its Cloudflare root slot is labelled `production`, with `docs/candidate-ui-handoff-2026-11-19` as the configured branch, automatic production deployments disabled and integration-preview mode enabled. This does not authorize an actual JobPunter production release. GoReallyBig is a separate static site and was not changed.
+
+Hosted CI has validated `output: 'export'`, `npm run build` and the `out` artifact at frontend commit `4c99c88`. Backend provider evidence identifies `https://jobpunter-api.onrender.com`, revision `3046731`. The first hashed preview deployed successfully; its sign-in attempt failed with Firebase `auth/unauthorized-domain`. The stable root domain must be authorized in the Firebase project trusted by the backend, and backend CORS must allow its exact HTTPS origin. These steps do not enable data actions without separate acceptance evidence. See implementation-progress.md for the build/runtime evidence and remaining blockers.
+
+The original pre-implementation plan follows for context; its claims of unknown configuration are superseded by the evidence above.
+
 Owner reports backend deployed, frontend not deployed (20 November 2026). This document does not claim an inspected Cloudflare project, verified backend URL or successful deployment.
 
 ## Sequence

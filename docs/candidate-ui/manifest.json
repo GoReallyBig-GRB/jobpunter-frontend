@@ -11,7 +11,7 @@
     ".gitattributes": "304a243789ae09f42ef54f7133a465c75696b23bbe2091007ff79ed5a94f8567",
     "AGENTS.md": "c057c2380a49ee4fee4fa0df9112803691db90fe63a977ff4599a3b00d19805c",
     "backend-connection-policy.md": "549801c69dcf8a7a996aad8783f0b5d8415dfa95bb6e3777add8cb8118dd0444",
-    "cloudflare-pages-connection.md": "f608eb99194c3a2d3e1f3619f7bd464643db5ef29e91c8c12af380aa2987756a",
+    "cloudflare-pages-connection.md": "46825f437fc7f7e8293feb104229be25e5334bb8243172ce0fa2a8c1c1563863",
     "connection-actions.json": "cc9807ae7687dedd6175d4aa7a92b390c9d322b189dbd9080971430b51680864",
     "demo/index.html": "419b03683fb1a702ea7c209adcf33d14184278b0943574f68cd27fb477e94859",
     "demo/LUCIDE-LICENSE": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57",
@@ -49,7 +49,7 @@
     "review.md": "7c3703b923d663b9e4ac1c4237ba5b1587ffc774849557ebf75aaa96b9579f06",
     "verify.py": "34565cd55fb9a615d282115359a1dd1ecb93ed6c7065e1709f5f2cc5bd86d857",
     "workflow-map.md": "d0bd01f8149d56bb702811d5766006044e8022522031eddd0c8ca8fbb1200c35",
-    "implementation-progress.md": "3d036578d049608c504543b741348e3a1aff2b4c1bfceeb91142b9fcf0e0fbda"
+    "implementation-progress.md": "e405757444109bac53d7e3fd94ebed7b24973ce9fb73006ef02bcd50365ffcc5"
   },
   "last_updated": "2026-11-20"
 }

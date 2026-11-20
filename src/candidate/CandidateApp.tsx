@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Bell, BriefcaseBusiness, ChevronDown, FileCheck2, FileText, House, Layers, Link, Mail, MoreHorizontal, Search, Settings2, Sparkles, Upload, UserRound, type LucideIcon } from 'lucide-react';
-import { googleSignIn, initAuth, logoutUser } from '../services/firebase';
+import { auth, googleSignIn, initAuth, logoutUser } from '../services/firebase';
 import { ConnectionAction, integrationPreview } from './ConnectionAction';
 import { actionReadiness, connectionFeedback } from './connections';
 import { searchProcessedJobs, type SearchJob, type SearchPage } from './searchApi';
@@ -17,8 +17,9 @@ const tabs: { title: Screen; icon: LucideIcon }[] = [
   { title: 'Pipeline', icon: BriefcaseBusiness }, { title: 'More', icon: MoreHorizontal },
 ];
 
-function Card({ title, subtitle, icon: Icon, onClick }: { title: string; subtitle: string; icon: LucideIcon; onClick: () => void }) {
-  return <button className="jp-small-card" onClick={onClick}><Icon aria-hidden="true" /><strong>{title}</strong><span>{subtitle}</span></button>;
+function Card({ title, subtitle, icon: Icon, onClick, connectionId }: { title: string; subtitle: string; icon: LucideIcon; onClick: () => void; connectionId?: string }) {
+  const readiness = connectionId ? actionReadiness(connectionId) : null;
+  return <button className="jp-small-card" data-connection-action={connectionId} onClick={onClick}><Icon aria-hidden="true" /><strong>{title}</strong><span>{subtitle}</span>{readiness && readiness.connection_state !== 'verified' && <small className="jp-pending">{integrationPreview ? readiness.connection_state === 'unverified' ? 'Verification pending' : 'Backend pending' : 'Unavailable'}</small>}</button>;
 }
 function Panel({ children, feature = false }: { children: ReactNode; feature?: boolean }) {
   return <section className={`jp-panel ${feature ? 'jp-feature' : ''}`}>{children}</section>;
@@ -40,13 +41,15 @@ export function CandidateApp() {
   const [searchResults, setSearchResults] = useState<SearchPage | null>(null);
   const [selectedJob, setSelectedJob] = useState<SearchJob | null>(null);
   const main = useRef<HTMLElement>(null);
+  const feedback = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (message) feedback.current?.focus(); }, [message]);
   useEffect(() => initAuth(user => {
     // Account changes must not retain another candidate's in-memory records.
     setSearchResults(null); setSelectedJob(null);
     setAccount({ uid: user.uid, name: user.displayName?.split(' ')[0] || 'there' }); setAuthReady(true);
   }, () => { setAccount(null); setSearchResults(null); setSelectedJob(null); setAuthReady(true); }), []);
 
-  function navigate(next: Screen) { setScreen(next); setIntake(null); setMessage(''); main.current?.focus(); window.scrollTo({ top: 0 }); }
+  function navigate(next: Screen) { setScreen(next); setIntake(null); setSearchOpen(false); setMessage(''); main.current?.focus(); window.scrollTo({ top: 0 }); }
   function career(next: CareerSection) { navigate('Career'); setCareerSection(next); }
   function pending(id: string) { setMessage(connectionFeedback(actionReadiness(id), integrationPreview) || 'This action is ready.'); }
   async function signIn() {
@@ -61,12 +64,12 @@ export function CandidateApp() {
 
   return <div className="jp-candidate">
     <header className="jp-header"><a href="#main" className="jp-brand" aria-label="JobPunter home" onClick={event => { event.preventDefault(); navigate('Home'); }}><img src="/jobpunter-logo.png" alt="JobPunter" /></a>
-      <div className="jp-header-actions"><button className="jp-icon-button" aria-label="Notifications" onClick={() => pending('notifications.list')}><Bell size={19} /></button>
+      <div className="jp-header-actions"><button className="jp-icon-button jp-notification-button" aria-label={`Notifications: ${integrationPreview ? 'Backend pending' : 'Unavailable'}`} onClick={() => pending('notifications.list')}><Bell size={17} /><small>{integrationPreview ? 'Backend pending' : 'Unavailable'}</small></button>
         {account ? <button className="jp-icon-button" aria-label="Account and settings" onClick={() => navigate('More')}><UserRound size={19} /></button> : <button className="jp-button" onClick={signIn} disabled={!authReady || signingIn}>{signingIn ? 'Signing in…' : 'Sign in'}</button>}</div>
     </header>
     {integrationPreview && <div className="jp-preview">Implementation preview · Unverified actions stay gated</div>}
     <main id="main" ref={main} tabIndex={-1} className="jp-content">
-      {message && <div className="jp-feedback" role="alert"><p>{message}</p><button className="jp-button" onClick={() => setMessage('')}>Dismiss</button></div>}
+      {message && <div ref={feedback} tabIndex={-1} className="jp-feedback" role="alert"><p>{message}</p><button className="jp-button" onClick={() => setMessage('')}>Dismiss</button></div>}
       {screen === 'Home' && <>
         <Heading eyebrow={account ? `Welcome back, ${account.name}` : 'Your workspace'} title="Your job search, at a glance">Find opportunities. Build a strong application. Keep moving.</Heading>
         <div className="jp-stats">{[['Job Pool', 'Opportunities'], ['Punts', 'Strong matches'], ['Pipeline', 'Applications']].map(([target, label]) => <button key={target} onClick={() => navigate(target as Screen)}><strong aria-label="Count not loaded">—</strong><span>{label}</span></button>)}</div>
@@ -116,9 +119,9 @@ export function CandidateApp() {
           <Card title="Career profile" subtitle="Review your factual source" icon={UserRound} onClick={() => setCareerSection('profile')} />
           <Card title="Career pathways" subtitle="Evidence-supported directions" icon={Sparkles} onClick={() => setCareerSection('pathways')} />
           <Card title="CV library" subtitle="Master and approved versions" icon={Layers} onClick={() => setCareerSection('documents')} />
-          <Card title="Supporting evidence" subtitle="Projects and achievements" icon={FileCheck2} onClick={() => pending('career.evidence.list')} />
+          <Card title="Supporting evidence" subtitle="Projects and achievements" icon={FileCheck2} connectionId="career.evidence.list" onClick={() => pending('career.evidence.list')} />
         </div>}
-        {careerSection === 'upload' && <Panel><h2>Add your CV</h2><p className="jp-muted">Files stay on this device until upload is connected. Selecting a file does not save or approve it.</p><label className="jp-field">CV file *<input type="file" accept=".pdf,.docx,.txt" /></label>{action('career.import', 'Upload and review', true)}</Panel>}
+        {careerSection === 'upload' && <Panel><h2>Add your CV</h2><p className="jp-muted">Files stay on this device until upload is connected. Selecting a file does not save or approve it.</p><label className="jp-field">CV file *<input type="file" required accept=".pdf,.docx,.txt" /></label>{action('career.import', 'Upload and review', true)}</Panel>}
         {careerSection === 'create' && <GuidedCareer report={setMessage} />}
         {careerSection === 'profile' && unavailable('career.profile.read', 'Your career profile has not been loaded.')}
         {careerSection === 'pathways' && unavailable('career.pathways.list', 'Pathways need approved career evidence. No directions have been generated here.')}
@@ -147,7 +150,7 @@ export function CandidateApp() {
       {screen === 'More' && <>
         <Heading eyebrow="Your account" title="A little more control">Manage your preferences, connections and support.</Heading>
         <Panel><h2>{account ? `Signed in as ${account.name}` : 'Sign in to JobPunter'}</h2><p className="jp-muted">Your account keeps your work separate from other candidates.</p>{account ? <button className="jp-button" onClick={async () => { try { await logoutUser(); setMessage('Signed out.'); } catch { setMessage('Could not sign out. Please retry.'); } }}>Sign out</button> : <button className="jp-button jp-primary" onClick={signIn} disabled={signingIn || !authReady}>Sign in with Google</button>}</Panel>
-        <div className="jp-card-grid"><Card title="Preferences" subtitle="Where and how you want to work" icon={Settings2} onClick={() => pending('preferences.read')} /><Card title="Notifications" subtitle="Your updates and reminders" icon={Bell} onClick={() => pending('notifications.list')} /><Card title="Email connection" subtitle="Separate mailbox permission" icon={Mail} onClick={() => pending('mailbox.connect')} /><Card title="Support" subtitle="Get help when you need it" icon={MoreHorizontal} onClick={() => pending('support.list')} /></div>
+        <div className="jp-card-grid"><Card title="Preferences" subtitle="Where and how you want to work" icon={Settings2} connectionId="preferences.read" onClick={() => pending('preferences.read')} /><Card title="Notifications" subtitle="Your updates and reminders" icon={Bell} connectionId="notifications.list" onClick={() => pending('notifications.list')} /><Card title="Email connection" subtitle="Separate mailbox permission" icon={Mail} connectionId="mailbox.connect" onClick={() => pending('mailbox.connect')} /><Card title="Support" subtitle="Get help when you need it" icon={MoreHorizontal} connectionId="support.list" onClick={() => pending('support.list')} /></div>
       </>}
       {selectedJob && <Panel><button className="jp-button" onClick={() => setSelectedJob(null)}>Close selected job</button><span className="jp-eyebrow">Selected opportunity</span><h2>{selectedJob.title}</h2><details className="jp-career-section"><summary>View this job’s details<ChevronDown size={17} /></summary><p>{selectedJob.company_name || 'Company not provided'}</p><p>{selectedJob.description?.preview || 'Description unavailable'}</p></details><p className="jp-muted">Your personal fit has not been assessed. Add career evidence before preparing tailored documents.</p>{action('application.create', 'Prepare this application', true)}{action('pool.watch', 'Watch')}{action('pool.reject', 'Reject')}<button className="jp-button" onClick={() => career('upload')}>Add your CV</button></Panel>}
     </main>
@@ -169,8 +172,10 @@ function SearchPanel({ personal, report, onResults }: { personal: boolean; repor
     </div>
     <ConnectionAction id={personal ? 'pool.search' : 'discover.search'} report={report} primary dispatch={personal ? undefined : async () => {
       if (!form.current?.reportValidity()) return;
+      const initiatingUser = auth.currentUser?.uid;
       const values = new FormData(form.current);
       const page = await searchProcessedJobs({ query: String(values.get('query') || ''), location_country: String(values.get('location_country') || ''), work_mode: String(values.get('work_mode') || ''), employment_type: String(values.get('employment_type') || '') });
+      if (!initiatingUser || auth.currentUser?.uid !== initiatingUser) return;
       onResults(page);
     }}>{personal ? 'Search pool' : 'Find opportunities'}</ConnectionAction>
     <p className="jp-small">{personal ? 'Search and counts apply to your full Job Pool when connected.' : 'Personal fit is assessed only when your career evidence is available.'}</p>
