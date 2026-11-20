@@ -1,0 +1,153 @@
+{
+  "scope": "New approved UI implementation; expand to individual actions as screens are built",
+  "actions": [
+    {
+      "id": "discover.search",
+      "gap_ids": [
+        "CUI-001",
+        "CUI-002"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "discover.intake",
+      "gap_ids": [
+        "CUI-002"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "discover.schedule",
+      "gap_ids": [
+        "CUI-001"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "pool.search",
+      "gap_ids": [
+        "CUI-002"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "punt.watch",
+      "gap_ids": [
+        "CUI-005",
+        "CUI-009"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "punt.reject",
+      "gap_ids": [
+        "CUI-005"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "application.create",
+      "gap_ids": [
+        "CUI-003"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "career.import",
+      "gap_ids": [
+        "CUI-008"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "career.approve",
+      "gap_ids": [
+        "CUI-008"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "cv.saveApprove",
+      "gap_ids": [
+        "CUI-007",
+        "CUI-008"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "package.approveExport",
+      "gap_ids": [
+        "CUI-007",
+        "CUI-008"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "application.submitRecord",
+      "gap_ids": [
+        "CUI-004"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "pipeline.move",
+      "gap_ids": [
+        "CUI-004"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "mailbox.connect",
+      "gap_ids": [
+        "CUI-006"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "interview.beginScoreEnd",
+      "gap_ids": [
+        "CUI-006"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "notifications.watchReminder",
+      "gap_ids": [
+        "CUI-005"
+      ],
+      "connection_state": "unverified",
+      "api_operation": null,
+      "verification_evidence": []
+    }
+  ]
+}

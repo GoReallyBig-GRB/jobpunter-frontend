@@ -10,7 +10,7 @@
   "gaps": [
     {
       "id": "CUI-001",
-      "title": "Candidate search still dispatches acquisition",
+      "title": "Verify completed central-pool deployment and connect candidate search",
       "priority": "High",
       "scope": "backend",
       "requirement_ids": [
@@ -18,11 +18,13 @@
       ],
       "status": "Open",
       "owner": null,
-      "acceptance_criteria": "Candidate search/schedules never invoke connectors; independently verify hourly central refresh.",
+      "acceptance_criteria": "Verify approximately 20 daily central acquisition runs, candidate searches and daily updates reading that pool without connector dispatch, and connect the new UI to the verified contract.",
       "baseline_evidence": "app/api/v1/discovery.py:171; app/workers/discovery_mission_worker.py:608",
       "implementation_refs": [],
       "verification_evidence": [],
-      "blockers": [],
+      "blockers": [
+        "Owner reports deployed central-pool implementation complete; locate deployed revision and verify candidate-only pool reads before rebuilding anything."
+      ],
       "closure_decision": null
     },
     {

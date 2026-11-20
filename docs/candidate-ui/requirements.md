@@ -6,7 +6,7 @@ This consolidates the user's decisions through 19 November 2026. Older requireme
 
 ## R01 — Search and discovery
 
-All first-time, Discover/global, quick and scheduled searches fetch already processed opportunities from JobPunter's central inventory. Independent backend acquisition refreshes hourly. Candidate preferences affect matching/recommendation timing, not connector setup. These implementation details must NOT appear in candidate UI copy. Use Find opportunities, Find jobs and Schedule recommendations.
+All first-time, Discover/global, quick and scheduled searches fetch already processed opportunities from JobPunter's central inventory. Independent backend acquisition runs approximately 20 times daily (owner reports implemented and deployed); candidate daily updates draw from that pool. Candidate preferences affect matching/recommendation timing, not connector setup. These implementation details must NOT appear in candidate UI copy. Use Find opportunities, Find jobs and Schedule recommendations.
 
 Discover starts with a collapsed search button and arrow, opening the full search panel. Below it, use small icon cards for URL, pasted JD (optional URL and source), pasted email/alert, separately authorized personal email alerts and scheduling. A submitted item enters processing/deduplication; it is not instantly a proven match. Preserve candidate-useful source provenance without exposing connector operations. Keywords are comma-separated; show this helper text.
 
@@ -55,3 +55,7 @@ Use full bordered/tinted or glowing cards to separate sections; do not introduce
 ## R09 — Production acceptance
 
 Use authenticated persisted state, ownership checks, authoritative counts, immutable approval history, revision conflict handling and recoverable loading/empty/error states. Do not port fixture scoring or global single-application state. Validate two independent applications, retained results after CV approval, a no-CV user, stale evidence and second-device resume. Preserve the existing frontend stack; live provider/deployment claims require separate evidence.
+
+## R10 � Visible integration readiness
+
+Follow backend-connection-policy.md and connection-actions.json. Pending actions show an explicit message and gap reference when initiated, with no simulated save or success. Backend deployment alone does not verify an action.

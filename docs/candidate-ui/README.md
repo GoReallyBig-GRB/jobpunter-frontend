@@ -22,3 +22,7 @@ The original 23 design briefs are retained in [reference/history](reference/hist
 The authoritative gap status lives only in this repository's gap-register.json. Backend work references those IDs through its `docs/candidate-ui-contracts/README.md`; it must not maintain a competing status list. [Source manifest](manifest.json) records baselines and checksums. [Cross-repository backend handoff](https://github.com/GoReallyBig-GRB/jobpunter-backend/tree/docs/candidate-ui-contracts-2026-11-19/docs/candidate-ui-contracts).
 
 Application implementation belongs in the existing Next.js/React/TypeScript architecture. Do not embed this prototype as the production application, copy fixture matching, or claim real submission from a preparation click.
+
+## Implementation update — 20 November 2026
+
+Read [visible connection-gap policy](backend-connection-policy.md), [action readiness registry](connection-actions.json) and [Cloudflare Pages connection plan](cloudflare-pages-connection.md). The backend is reported deployed; central acquisition is reported complete. CUI-001 is a verification/integration item. Run python docs/candidate-ui/verify.py from the repository root to verify package integrity.

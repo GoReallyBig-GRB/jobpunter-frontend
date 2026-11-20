@@ -8,14 +8,18 @@
   "demo_published_source_commit": "9c8ef733ca11882a6c3bfa3d9cf1fa6b3c7b16ea",
   "demo_packaging": "Unmodified source fragment in offline HTML wrapper, vendored lucide 1.8.0 (ISC). Not production code.",
   "files": {
+    ".gitattributes": "304a243789ae09f42ef54f7133a465c75696b23bbe2091007ff79ed5a94f8567",
     "AGENTS.md": "c057c2380a49ee4fee4fa0df9112803691db90fe63a977ff4599a3b00d19805c",
+    "backend-connection-policy.md": "549801c69dcf8a7a996aad8783f0b5d8415dfa95bb6e3777add8cb8118dd0444",
+    "cloudflare-pages-connection.md": "f608eb99194c3a2d3e1f3619f7bd464643db5ef29e91c8c12af380aa2987756a",
+    "connection-actions.json": "2f932abe660aba87c17bc2d7479ee44e7445fa8235ce35165f81cea1f7b8df77",
     "demo/index.html": "419b03683fb1a702ea7c209adcf33d14184278b0943574f68cd27fb477e94859",
     "demo/LUCIDE-LICENSE": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57",
     "demo/lucide.min.js": "ab85225ecc1daa2033607856f03dd2dabcbc08e2d260a5b97e17c690aa929766",
     "demo/source.html": "a53fb4e7fb1b4eab11e614c59dcb4003d8ed1a42fb1325f39485afe01c48d898",
-    "gap-register.json": "9c841f8ce8d1d4bec9d85d5f6f616fa17147697913264f995fa909118bfefb43",
-    "README.md": "15ddd5ae4c676882d78a407a880ce38c80821aabe77828b731c617e5e4947f86",
-    "reconciliation-log.md": "01db2dffad0d2d456982555134541b22b45b6d9e236a99a6053c75a080438642",
+    "gap-register.json": "55f2c144db6b9c2ecd628a0afc31a49afffc09e562752c476d247d7b742d2ada",
+    "README.md": "0aecd819105ba4f7e4e0f7835a42b6028df1b937d8321131a9493ccf7a2f4eb8",
+    "reconciliation-log.md": "caa63fd8eb477f726c3f2c8ec125d4f5cc120930f749dc08b00666aebc9e853e",
     "reconciliation.md": "3d0d2ffc6d1b5ba1999ba6a4b3a4952dd5ad34552e96164dfaaedecdccfe02ee",
     "reference/history/01-assisted-candidate-workflow.md": "c20d1b1647d47bb60368c96b74633a9bc6a701979594154f38ac32e678978e09",
     "reference/history/02-assistance-and-approval-contracts.md": "23e652349b4af44fb93f3b0b69a8579e6ecdeecbc8e63484e10d84ffe613a82b",
@@ -41,8 +45,10 @@
     "reference/history/22-central-pool-product-decision.md": "606568ddb313eac2323035decf71e8e44d0f708e5512687d69afb4b876e8dcf8",
     "reference/history/23-punts-workspace-and-watch-reminders.md": "9d26fa8130c96a0d9192e6cdaf4d2ce7917b0b8873ebd4f70752fe29524d9270",
     "reference/prd-v1.6.txt": "4b11fb9a9478f17773302f82dd946013efeae9f018d6b35de9e80e27054487ce",
-    "requirements.md": "7677237f57d956b564118a6d912c47a4eb7780babd862eb86c5cc4d2ed7298de",
+    "requirements.md": "a26bbf09b7c040f805a6df7f5ad4438d858dc9d00fa5e2e7b826a6953769c7c9",
     "review.md": "7c3703b923d663b9e4ac1c4237ba5b1587ffc774849557ebf75aaa96b9579f06",
+    "verify.py": "34565cd55fb9a615d282115359a1dd1ecb93ed6c7065e1709f5f2cc5bd86d857",
     "workflow-map.md": "d0bd01f8149d56bb702811d5766006044e8022522031eddd0c8ca8fbb1200c35"
-  }
+  },
+  "last_updated": "2026-11-20"
 }
