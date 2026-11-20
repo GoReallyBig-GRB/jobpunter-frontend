@@ -49,7 +49,7 @@ export function CandidateApp() {
     setAccount({ uid: user.uid, name: user.displayName?.split(' ')[0] || 'there' }); setAuthReady(true);
   }, () => { setAccount(null); setSearchResults(null); setSelectedJob(null); setAuthReady(true); }), []);
 
-  function navigate(next: Screen) { setScreen(next); setIntake(null); setSearchOpen(false); setMessage(''); main.current?.focus(); window.scrollTo({ top: 0 }); }
+  function navigate(next: Screen, openSearch = false) { setScreen(next); setIntake(null); setSearchOpen(next === 'Discover' && openSearch); setMessage(''); main.current?.focus(); window.scrollTo({ top: 0 }); }
   function career(next: CareerSection) { navigate('Career'); setCareerSection(next); }
   function pending(id: string) { setMessage(connectionFeedback(actionReadiness(id), integrationPreview) || 'This action is ready.'); }
   async function signIn() {
@@ -73,7 +73,7 @@ export function CandidateApp() {
       {screen === 'Home' && <>
         <Heading eyebrow={account ? `Welcome back, ${account.name}` : 'Your workspace'} title="Your job search, at a glance">Find opportunities. Build a strong application. Keep moving.</Heading>
         <div className="jp-stats">{[['Job Pool', 'Opportunities'], ['Punts', 'Strong matches'], ['Pipeline', 'Applications']].map(([target, label]) => <button key={target} onClick={() => navigate(target as Screen)}><strong aria-label="Count not loaded">—</strong><span>{label}</span></button>)}</div>
-        <Panel feature><span className="jp-eyebrow">Your next step</span><h2>Find your next opportunity</h2><p>Start with the roles and locations you have in mind. Review the jobs, then add your career information to assess personal fit.</p><button className="jp-button jp-primary" onClick={() => navigate('Discover')}>Find opportunities</button></Panel>
+        <Panel feature><span className="jp-eyebrow">Your next step</span><h2>Find your next opportunity</h2><p>Start with the roles and locations you have in mind. Review the jobs, then add your career information to assess personal fit.</p><button className="jp-button jp-primary" onClick={() => navigate('Discover', true)}>Find opportunities</button></Panel>
         <h2>Make your next move</h2><div className="jp-card-grid">
           <Card title="Your career" subtitle="Your experience, in one place" icon={UserRound} onClick={() => career('overview')} />
           <Card title="Add your CV" subtitle="Start with what you have" icon={Upload} onClick={() => career('upload')} />
@@ -89,7 +89,7 @@ export function CandidateApp() {
       {screen === 'Discover' && <>
         <Heading eyebrow="Discover" title="Find your next opportunity">Find opportunities that suit your preferences, or add a job you already have in mind.</Heading>
         <button className="jp-disclosure" aria-expanded={searchOpen} aria-controls="discover-search" onClick={() => setSearchOpen(!searchOpen)}><span>Find opportunities</span><ChevronDown className={searchOpen ? 'jp-rotated' : ''} /></button>
-        <div id="discover-search" hidden={!searchOpen}><SearchPanel personal={false} report={setMessage} onResults={setSearchResults} /></div>
+        <div id="discover-search" hidden={!searchOpen}><SearchPanel personal={false} initialFiltersOpen={searchOpen} report={setMessage} onResults={setSearchResults} /></div>
         <h2 className="jp-section-title">Already found something?</h2><div className="jp-card-grid">
           <Card title="Add a job link" subtitle="Bring a listing with you" icon={Link} onClick={() => setIntake('url')} />
           <Card title="Paste a job" subtitle="Add the full description" icon={FileText} onClick={() => setIntake('description')} />
@@ -107,7 +107,7 @@ export function CandidateApp() {
         <div className="jp-actions"><button className="jp-disclosure" aria-expanded={searchOpen} aria-controls="pool-search" onClick={() => setSearchOpen(!searchOpen)}>Search your pool <ChevronDown className={searchOpen ? 'jp-rotated' : ''} /></button><button className="jp-button" onClick={() => navigate('Punts')}>View Punts</button></div>
         <div id="pool-search" hidden={!searchOpen}><SearchPanel personal report={setMessage} onResults={setSearchResults} /></div>
         {unavailable('pool.list', 'Your Job Pool has not been loaded. Opportunity and Punt counts are unavailable.')}
-        <button className="jp-button jp-primary" onClick={() => navigate('Discover')}>Find opportunities</button>
+        <button className="jp-button jp-primary" onClick={() => navigate('Discover', true)}>Find opportunities</button>
       </>}
 
       {screen === 'Career' && <>
@@ -158,9 +158,9 @@ export function CandidateApp() {
   </div>;
 }
 
-function SearchPanel({ personal, report, onResults }: { personal: boolean; report: (message: string) => void; onResults: (page: SearchPage) => void }) {
+function SearchPanel({ personal, report, onResults, initialFiltersOpen = false }: { personal: boolean; report: (message: string) => void; onResults: (page: SearchPage) => void; initialFiltersOpen?: boolean }) {
   const form = useRef<HTMLFormElement>(null);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(initialFiltersOpen);
   return <form ref={form} className="jp-panel jp-search" onSubmit={event => { event.preventDefault(); form.current?.querySelector<HTMLButtonElement>('[data-connection-action]')?.click(); }}>
     <label className="jp-field">{personal ? 'Search your opportunities' : 'Roles or keywords *'}<input name="query" required={!personal} maxLength={120} placeholder="e.g. product manager, SaaS" /></label>
     <p className="jp-small">Separate keywords with commas.</p>
