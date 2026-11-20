@@ -31,3 +31,7 @@ npm run dev
 Set `NEXT_PUBLIC_JOBPUNTER_API_BASE_URL=http://localhost:8000` to point the frontend at a local FastAPI service. This URL is public configuration, not a secret.
 
 Never place database URLs, provider API keys, server credentials, or other privileged settings in this repository's frontend environment variables.
+
+## Candidate UI implementation handoff
+
+See [the versioned demo, approved requirements and reconciliation register](docs/candidate-ui/README.md) before implementing candidate workflows.

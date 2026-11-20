@@ -9,7 +9,14 @@ import {
 } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
 
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+const publicFirebaseConfig = {
+  ...firebaseConfig,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || firebaseConfig.apiKey,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || firebaseConfig.authDomain,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || firebaseConfig.projectId,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || firebaseConfig.appId,
+};
+const app = getApps().length > 0 ? getApp() : initializeApp(publicFirebaseConfig);
 export const auth = getAuth(app);
 
 export type WorkspaceIntegration = 'drive' | 'gmail' | 'calendar' | 'tasks';

@@ -1,0 +1,36 @@
+{
+  "scope": "Read-only runtime prerequisites; not authenticated acceptance",
+  "frontend_commit": "3f9214a21a794e05bd0c8df908999508e10b5354",
+  "github_run": 44702179597,
+  "github_job": 136172949705,
+  "observed_at": "2026-11-20T08:24:12Z",
+  "api_origin": "https://jobpunter-api.onrender.com",
+  "staging_origin": "https://jobpuntertest.goreallybig.com",
+  "health": {
+    "http_status": 200,
+    "reported_deployment_revision": "da3822ff13ce57d88d3a1df5745f1faf10c05e27"
+  },
+  "render_live_artifact_revision": "304673112c4892e56649615e66733c75f063545b",
+  "revision_reconciliation": "Reported health revision differs from provider artifact; do not treat the configured health label as code provenance.",
+  "preflights": [
+    {
+      "path": "/api/v1/candidate/jobs/pool",
+      "method": "GET",
+      "http_status": 405,
+      "allow_origin": null,
+      "passed": false
+    },
+    {
+      "path": "/api/v1/candidate/preferences",
+      "method": "PUT",
+      "http_status": 405,
+      "allow_origin": null,
+      "passed": false
+    }
+  ],
+  "diagnostic_exit_code": 1,
+  "authenticated_backend_journey_verified": false,
+  "frontend_firebase_signin_and_refresh_verified": true,
+  "cors_configuration_changed": false,
+  "configuration_blocker": "Render connector requires explicit owner confirmation of My Workspace (tea-dbp9fsnf3r2c73fgc0ng) before environment updates."
+}
