@@ -17,3 +17,5 @@ R01/R08/R09/R10; CUI-001 through CUI-009 remain Open. Owner claimed in the gap r
 ## 20 November 2026 - direct search entry (owner browser comment)
 
 R01/R03: the Home Find opportunities CTA must open Discover with the search panel and filters already expanded, so the candidate can start entering criteria immediately. Apply the same direct-entry behavior to the Job Pool Find opportunities CTA. Ordinary Discover tab navigation retains the collapsed default. No API action runs on navigation, and connection gates remain unchanged. Implementation: src/candidate/CandidateApp.tsx, existing frontend PR #8.
+
+Verification: frontend 7283598c4d576028527770d7f0ff5d7b1386b6b6 deployed in Cloudflare build b6e844b5-7003-4483-b6dc-136409bd8a11. On staging, one Home CTA click exposes roles/country and expanded filters; the Job Pool CTA does the same. Normal Discover tab entry keeps the search panel collapsed. Browser inspection at 390 x 844 confirms both disclosure aria-expanded values are true on direct entry. Screenshot: evidence/direct-search-entry.jpg. Existing six gate checks and packaged-file verifier pass; no backend request is dispatched by this navigation.
