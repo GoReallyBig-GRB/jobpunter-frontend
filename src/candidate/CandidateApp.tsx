@@ -63,7 +63,7 @@ export function CandidateApp() {
   const unavailable = (id: string, text: string) => <Panel><p>{text}</p>{action(id, 'Load latest')}</Panel>;
 
   return <div className="jp-candidate">
-    <header className="jp-header"><a href="#main" className="jp-brand" aria-label="JobPunter home" onClick={event => { event.preventDefault(); navigate('Home'); }}><img src="/jobpunter-logo.png" alt="JobPunter" /></a>
+    <header className="jp-header"><a href="#main" className="jp-brand" aria-label="JobPunter home" onClick={event => { event.preventDefault(); navigate('Home'); }}><img src="/jobpunter-main.png" alt="JobPunter" width={78} height={66} /></a>
       <div className="jp-header-actions"><button className="jp-icon-button jp-notification-button" aria-label={`Notifications: ${integrationPreview ? 'Backend pending' : 'Unavailable'}`} onClick={() => pending('notifications.list')}><Bell size={17} /><small>{integrationPreview ? 'Backend pending' : 'Unavailable'}</small></button>
         {account ? <button className="jp-icon-button" aria-label="Account and settings" onClick={() => navigate('More')}><UserRound size={19} /></button> : <button className="jp-button" onClick={signIn} disabled={!authReady || signingIn}>{signingIn ? 'Signing in…' : 'Sign in'}</button>}</div>
     </header>
