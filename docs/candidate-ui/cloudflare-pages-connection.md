@@ -2,6 +2,8 @@
 
 ## Current staging decision - 20 November 2026
 
+Latest owner decision: main staging is `https://jobpuntertest.goreallybig.com/`; actual production is reserved at `https://jobpunter.goreallybig.com/`. The Pages root below is a fallback staging address. The custom staging domain is active on Cloudflare, with one proxied CNAME to `jobpunter-candidate.pages.dev`. No production DNS record was created or changed. The owner confirmed adding all three stable hostnames to Firebase authorized domains.
+
 Use `https://jobpunter-candidate.pages.dev/` as the owner-requested stable staging address. This is a separate Pages project connected only to the candidate handoff work. Its Cloudflare root slot is labelled `production`, with `docs/candidate-ui-handoff-2026-11-19` as the configured branch, automatic production deployments disabled and integration-preview mode enabled. This does not authorize an actual JobPunter production release. GoReallyBig is a separate static site and was not changed.
 
 Hosted CI has validated `output: 'export'`, `npm run build` and the `out` artifact at frontend commit `4c99c88`. Backend provider evidence identifies `https://jobpunter-api.onrender.com`, revision `3046731`. The first hashed preview deployed successfully; its sign-in attempt failed with Firebase `auth/unauthorized-domain`. The stable root domain must be authorized in the Firebase project trusted by the backend, and backend CORS must allow its exact HTTPS origin. These steps do not enable data actions without separate acceptance evidence. See implementation-progress.md for the build/runtime evidence and remaining blockers.

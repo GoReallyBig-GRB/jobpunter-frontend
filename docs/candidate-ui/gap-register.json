@@ -23,9 +23,11 @@
       "implementation_refs": [
         "Frontend PR #8, existing docs/candidate-ui-handoff-2026-11-19 branch; src/candidate/ (in progress, not gap acceptance)"
       ],
-      "verification_evidence": [],
+      "verification_evidence": [
+        "Render live deployment dep-dbvti6rrjlhs73fnucv0 identifies backend 304673112c4892e56649615e66733c75f063545b; frontend 5df33d8 deployed to active staging domain; Firebase sign-in and refresh passed. Acquisition cadence, processed search admission and backend authenticated integration not yet accepted."
+      ],
       "blockers": [
-        "Owner reports deployed central-pool implementation complete; locate deployed revision and verify candidate-only pool reads before rebuilding anything."
+        "Verify independent acquisition cadence and candidate pool-only integration. At deployed 3046731, pool feed does not require processed/complete descriptions and treats comma-separated search text as one substring; mission worker still dispatches connectors. Search remains gated."
       ],
       "closure_decision": null
     },
@@ -45,7 +47,9 @@
         "Frontend PR #8, existing docs/candidate-ui-handoff-2026-11-19 branch; src/candidate/ (in progress, not gap acceptance)"
       ],
       "verification_evidence": [],
-      "blockers": [],
+      "blockers": [
+        "At deployed 3046731, pool feed uses offset paging and does not provide required personal viable-admission/filter/count contract. Exact-revision evidence: app/application/jobs/job_pool_service.py:277-395."
+      ],
       "closure_decision": null
     },
     {

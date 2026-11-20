@@ -37,6 +37,13 @@ jobs:
         run: npx tsx --test scripts/candidate-connections.test.mjs
       - run: npm run lint
       - run: npm run build
+      - name: Read-only staging liveness and CORS (not authenticated acceptance)
+        if: github.head_ref == 'docs/candidate-ui-handoff-2026-11-19'
+        continue-on-error: true
+        env:
+          CANDIDATE_API_ORIGIN: https://jobpunter-api.onrender.com
+          CANDIDATE_PREVIEW_ORIGIN: https://jobpuntertest.goreallybig.com
+        run: node scripts/check-candidate-preview-runtime.mjs
       - name: Smoke-test frontend
         shell: bash
         run: |
