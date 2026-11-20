@@ -17,7 +17,7 @@
     "demo/LUCIDE-LICENSE": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57",
     "demo/lucide.min.js": "ab85225ecc1daa2033607856f03dd2dabcbc08e2d260a5b97e17c690aa929766",
     "demo/source.html": "a53fb4e7fb1b4eab11e614c59dcb4003d8ed1a42fb1325f39485afe01c48d898",
-    "gap-register.json": "161d2a314566ea941c4a32bff590deb5ec84d525d2c4a03cc9cbb32fe773d844",
+    "gap-register.json": "ab5a964e59d3ba7a8fa70d20e75ba7854dfd0871733c17b9fae83a5ab7850b02",
     "README.md": "0aecd819105ba4f7e4e0f7835a42b6028df1b937d8321131a9493ccf7a2f4eb8",
     "reconciliation-log.md": "c0cafa3f925ca022edc13575d968261e5f2856d5a6e943d947cc3dfbf70bcc01",
     "reconciliation.md": "3d0d2ffc6d1b5ba1999ba6a4b3a4952dd5ad34552e96164dfaaedecdccfe02ee",
@@ -49,8 +49,9 @@
     "review.md": "7c3703b923d663b9e4ac1c4237ba5b1587ffc774849557ebf75aaa96b9579f06",
     "verify.py": "34565cd55fb9a615d282115359a1dd1ecb93ed6c7065e1709f5f2cc5bd86d857",
     "workflow-map.md": "d0bd01f8149d56bb702811d5766006044e8022522031eddd0c8ca8fbb1200c35",
-    "implementation-progress.md": "e5e73dd696dc9b5595d7e0c2d5e7222333928c1b324ba90c2f99932abbab61fd",
-    "evidence/home-mobile.jpg": "47488abee28e023277c04e5e1dceecb70f3620e7f5d8041a50728bd2c758c9c6"
+    "implementation-progress.md": "835eccb5db4a0a01bd84cf62737094de13964982753507e4eace74b8f149baab",
+    "evidence/home-mobile.jpg": "47488abee28e023277c04e5e1dceecb70f3620e7f5d8041a50728bd2c758c9c6",
+    "evidence/runtime-prerequisites.json": "88bff037c661a9c49d8b1d47beb708f16af9cca110d2c0eebfd084fad50a6c0d"
   },
   "last_updated": "2026-11-20"
 }

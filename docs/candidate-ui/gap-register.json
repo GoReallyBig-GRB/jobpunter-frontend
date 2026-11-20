@@ -27,7 +27,9 @@
         "Render live deployment dep-dbvti6rrjlhs73fnucv0 identifies backend 304673112c4892e56649615e66733c75f063545b; frontend 5df33d8 deployed to active staging domain; Firebase sign-in and refresh passed. Acquisition cadence, processed search admission and backend authenticated integration not yet accepted."
       ],
       "blockers": [
-        "Verify independent acquisition cadence and candidate pool-only integration. At deployed 3046731, pool feed does not require processed/complete descriptions and treats comma-separated search text as one substring; mission worker still dispatches connectors. Search remains gated."
+        "Verify independent acquisition cadence and candidate pool-only integration. At deployed 3046731, pool feed does not require processed/complete descriptions and treats comma-separated search text as one substring; mission worker still dispatches connectors. Search remains gated.",
+        "Staging CORS preflights return 405 without an allow-origin header. Render environment update is blocked pending explicit owner confirmation of My Workspace.",
+        "Health configured revision da3822f differs from Render live artifact 3046731; reconcile deployment metadata before relying on health revision as provenance."
       ],
       "closure_decision": null
     },
