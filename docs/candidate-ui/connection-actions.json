@@ -1,5 +1,5 @@
 {
-  "scope": "New approved UI implementation; expand to individual actions as screens are built",
+  "scope": "Candidate React implementation. Exact action IDs; verified execution requires operation and evidence.",
   "actions": [
     {
       "id": "discover.search",
@@ -8,15 +8,17 @@
         "CUI-002"
       ],
       "connection_state": "unverified",
-      "api_operation": null,
-      "verification_evidence": []
+      "api_operation": "GET /api/v1/candidate/jobs/pool",
+      "verification_evidence": [],
+      "screen": "Discover",
+      "backend_revision": "304673112c4892e56649615e66733c75f063545b"
     },
     {
       "id": "discover.intake",
       "gap_ids": [
         "CUI-002"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -25,7 +27,7 @@
       "gap_ids": [
         "CUI-001"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -34,7 +36,7 @@
       "gap_ids": [
         "CUI-002"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -44,7 +46,7 @@
         "CUI-005",
         "CUI-009"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -53,7 +55,7 @@
       "gap_ids": [
         "CUI-005"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -62,7 +64,7 @@
       "gap_ids": [
         "CUI-003"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -71,7 +73,7 @@
       "gap_ids": [
         "CUI-008"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -80,7 +82,7 @@
       "gap_ids": [
         "CUI-008"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -90,7 +92,7 @@
         "CUI-007",
         "CUI-008"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -100,7 +102,7 @@
         "CUI-007",
         "CUI-008"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -109,7 +111,7 @@
       "gap_ids": [
         "CUI-004"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -118,7 +120,7 @@
       "gap_ids": [
         "CUI-004"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -127,7 +129,7 @@
       "gap_ids": [
         "CUI-006"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -136,7 +138,7 @@
       "gap_ids": [
         "CUI-006"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     },
@@ -145,7 +147,241 @@
       "gap_ids": [
         "CUI-005"
       ],
-      "connection_state": "unverified",
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "pool.list",
+      "screen": "Job Pool",
+      "gap_ids": [
+        "CUI-002"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "pool.watch",
+      "screen": "Job Pool",
+      "gap_ids": [
+        "CUI-002",
+        "CUI-009"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "pool.reject",
+      "screen": "Job Pool",
+      "gap_ids": [
+        "CUI-002"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "discover.results",
+      "screen": "Discover",
+      "gap_ids": [
+        "CUI-001",
+        "CUI-008"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "discover.intake.url",
+      "screen": "Discover",
+      "gap_ids": [
+        "CUI-002"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "discover.intake.description",
+      "screen": "Discover",
+      "gap_ids": [
+        "CUI-002"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "discover.intake.email",
+      "screen": "Discover",
+      "gap_ids": [
+        "CUI-002"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "notifications.list",
+      "screen": "Home",
+      "gap_ids": [
+        "CUI-005",
+        "CUI-006"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "activity.list",
+      "screen": "Home",
+      "gap_ids": [
+        "CUI-008"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "support.list",
+      "screen": "More",
+      "gap_ids": [
+        "CUI-008"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "career.evidence.list",
+      "screen": "Career",
+      "gap_ids": [
+        "CUI-008"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "career.profile.read",
+      "screen": "Career",
+      "gap_ids": [
+        "CUI-008"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "career.pathways.list",
+      "screen": "Career",
+      "gap_ids": [
+        "CUI-008"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "career.draft.save",
+      "screen": "Career",
+      "gap_ids": [
+        "CUI-008"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "cv.list",
+      "screen": "Career",
+      "gap_ids": [
+        "CUI-007",
+        "CUI-008"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "cv.regenerate",
+      "screen": "Career",
+      "gap_ids": [
+        "CUI-008"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "cv.export.pdf",
+      "screen": "Career",
+      "gap_ids": [
+        "CUI-007"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "cv.export.docx",
+      "screen": "Career",
+      "gap_ids": [
+        "CUI-007"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "review.list",
+      "screen": "Review",
+      "gap_ids": [
+        "CUI-008"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "punts.list",
+      "screen": "Punts",
+      "gap_ids": [
+        "CUI-005"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "pipeline.list",
+      "screen": "Pipeline",
+      "gap_ids": [
+        "CUI-004"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "interview.open",
+      "screen": "Pipeline",
+      "gap_ids": [
+        "CUI-006"
+      ],
+      "connection_state": "not_connected",
+      "api_operation": null,
+      "verification_evidence": []
+    },
+    {
+      "id": "preferences.read",
+      "screen": "More",
+      "gap_ids": [
+        "CUI-008"
+      ],
+      "connection_state": "not_connected",
       "api_operation": null,
       "verification_evidence": []
     }

@@ -4,6 +4,8 @@ import type { NextConfig } from 'next';
 // Gemini provider therefore uses only an explicitly user-supplied API key.
 // A shared deployment key can be reintroduced only through an authenticated,
 // rate-limited server-side AI endpoint.
-const nextConfig: NextConfig = {};
+// App Router has a single static entry point; authenticated reads and writes
+// run in the browser against the separately deployed API.
+const nextConfig: NextConfig = { output: 'export' };
 
 export default nextConfig;

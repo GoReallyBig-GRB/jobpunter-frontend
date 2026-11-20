@@ -17,10 +17,12 @@
         "R01"
       ],
       "status": "Open",
-      "owner": null,
+      "owner": "Codex (candidate frontend implementation)",
       "acceptance_criteria": "Verify approximately 20 daily central acquisition runs, candidate searches and daily updates reading that pool without connector dispatch, and connect the new UI to the verified contract.",
       "baseline_evidence": "app/api/v1/discovery.py:171; app/workers/discovery_mission_worker.py:608",
-      "implementation_refs": [],
+      "implementation_refs": [
+        "Frontend PR #8, existing docs/candidate-ui-handoff-2026-11-19 branch; src/candidate/ (in progress, not gap acceptance)"
+      ],
       "verification_evidence": [],
       "blockers": [
         "Owner reports deployed central-pool implementation complete; locate deployed revision and verify candidate-only pool reads before rebuilding anything."
@@ -36,10 +38,12 @@
         "R02"
       ],
       "status": "Open",
-      "owner": null,
+      "owner": "Codex (candidate frontend implementation)",
       "acceptance_criteria": "Current viable candidate records only; all requested filters/counts; stable paging; one job with multiple pathway assessments; no-CV search remains possible.",
       "baseline_evidence": "app/application/jobs/job_pool_service.py:277; app/application/opportunities/service.py:60",
-      "implementation_refs": [],
+      "implementation_refs": [
+        "Frontend PR #8, existing docs/candidate-ui-handoff-2026-11-19 branch; src/candidate/ (in progress, not gap acceptance)"
+      ],
       "verification_evidence": [],
       "blockers": [],
       "closure_decision": null
@@ -54,10 +58,12 @@
         "R05"
       ],
       "status": "Open",
-      "owner": null,
+      "owner": "Codex (candidate frontend implementation)",
       "acceptance_criteria": "Create candidate-directed application without false Punt promotion; retain assessment/risk policy and no-CV boundary.",
       "baseline_evidence": "app/application/opportunities/schemas.py:11; app/application/opportunities/service.py:802",
-      "implementation_refs": [],
+      "implementation_refs": [
+        "Frontend PR #8, existing docs/candidate-ui-handoff-2026-11-19 branch; src/candidate/ (in progress, not gap acceptance)"
+      ],
       "verification_evidence": [],
       "blockers": [],
       "closure_decision": null
@@ -71,10 +77,12 @@
         "R07"
       ],
       "status": "Open",
-      "owner": null,
+      "owner": "Codex (candidate frontend implementation)",
       "acceptance_criteria": "Agreed stage/event mapping; two independent applications; audited corrections and revision conflicts; no submission on package approval.",
       "baseline_evidence": "app/domain/opportunities/service.py:4; demo/source.html:1193",
-      "implementation_refs": [],
+      "implementation_refs": [
+        "Frontend PR #8, existing docs/candidate-ui-handoff-2026-11-19 branch; src/candidate/ (in progress, not gap acceptance)"
+      ],
       "verification_evidence": [],
       "blockers": [],
       "closure_decision": null
@@ -88,10 +96,12 @@
         "R06"
       ],
       "status": "Open",
-      "owner": null,
+      "owner": "Codex (candidate frontend implementation)",
       "acceptance_criteria": "Persistent disposition history; full-data timezone-correct counts; one reminder per fresh login; per-Punt 14-day inactivity suppression; retain saved records.",
       "baseline_evidence": "app/api/v1/saved_jobs.py:19; demo/source.html:1336; demo/source.html:1377",
-      "implementation_refs": [],
+      "implementation_refs": [
+        "Frontend PR #8, existing docs/candidate-ui-handoff-2026-11-19 branch; src/candidate/ (in progress, not gap acceptance)"
+      ],
       "verification_evidence": [],
       "blockers": [],
       "closure_decision": null
@@ -105,10 +115,12 @@
         "R07"
       ],
       "status": "Open",
-      "owner": null,
+      "owner": "Codex (candidate frontend implementation)",
       "acceptance_criteria": "Separate mailbox consent/revocation; attributed reviewed events; persisted practice attempts/results; repeat/end/resume; agreed two-reminder abandonment policy.",
       "baseline_evidence": "app/api/v1/email_parser.py:22; demo/source.html:1298",
-      "implementation_refs": [],
+      "implementation_refs": [
+        "Frontend PR #8, existing docs/candidate-ui-handoff-2026-11-19 branch; src/candidate/ (in progress, not gap acceptance)"
+      ],
       "verification_evidence": [],
       "blockers": [],
       "closure_decision": null
@@ -122,10 +134,12 @@
         "R05"
       ],
       "status": "Open",
-      "owner": null,
+      "owner": "Codex (candidate frontend implementation)",
       "acceptance_criteria": "Same approved content/formatting through preview, edit, save, DOCX/PDF export; actual A4 pages; safe rich text.",
       "baseline_evidence": "app/application/documents/rendering.py:29; app/application/documents/rendering.py:177",
-      "implementation_refs": [],
+      "implementation_refs": [
+        "Frontend PR #8, existing docs/candidate-ui-handoff-2026-11-19 branch; src/candidate/ (in progress, not gap acceptance)"
+      ],
       "verification_evidence": [],
       "blockers": [],
       "closure_decision": null
@@ -141,10 +155,12 @@
         "R05"
       ],
       "status": "Open",
-      "owner": null,
+      "owner": "Codex (candidate frontend implementation)",
       "acceptance_criteria": "CV approval matches retained results and preserves selected job; retry-safe save/approve; conflicts/partial failures visible; resume across devices.",
       "baseline_evidence": "app/api/v1/cv_studio.py:62; app/api/v1/application_packages.py:49",
-      "implementation_refs": [],
+      "implementation_refs": [
+        "Frontend PR #8, existing docs/candidate-ui-handoff-2026-11-19 branch; src/candidate/ (in progress, not gap acceptance)"
+      ],
       "verification_evidence": [],
       "blockers": [],
       "closure_decision": null
@@ -158,10 +174,12 @@
         "R09"
       ],
       "status": "Open",
-      "owner": null,
+      "owner": "Codex (candidate frontend implementation)",
       "acceptance_criteria": "Apply canonical visibility rules on save and list; deny foreign manual records and revoked visibility; regression tests.",
       "baseline_evidence": "app/api/v1/saved_jobs.py:56; app/application/jobs/access.py:64",
-      "implementation_refs": [],
+      "implementation_refs": [
+        "Frontend PR #8, existing docs/candidate-ui-handoff-2026-11-19 branch; src/candidate/ (in progress, not gap acceptance)"
+      ],
       "verification_evidence": [],
       "blockers": [],
       "closure_decision": null

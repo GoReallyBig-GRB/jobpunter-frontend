@@ -12,14 +12,14 @@
     "AGENTS.md": "c057c2380a49ee4fee4fa0df9112803691db90fe63a977ff4599a3b00d19805c",
     "backend-connection-policy.md": "549801c69dcf8a7a996aad8783f0b5d8415dfa95bb6e3777add8cb8118dd0444",
     "cloudflare-pages-connection.md": "f608eb99194c3a2d3e1f3619f7bd464643db5ef29e91c8c12af380aa2987756a",
-    "connection-actions.json": "2f932abe660aba87c17bc2d7479ee44e7445fa8235ce35165f81cea1f7b8df77",
+    "connection-actions.json": "cc9807ae7687dedd6175d4aa7a92b390c9d322b189dbd9080971430b51680864",
     "demo/index.html": "419b03683fb1a702ea7c209adcf33d14184278b0943574f68cd27fb477e94859",
     "demo/LUCIDE-LICENSE": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57",
     "demo/lucide.min.js": "ab85225ecc1daa2033607856f03dd2dabcbc08e2d260a5b97e17c690aa929766",
     "demo/source.html": "a53fb4e7fb1b4eab11e614c59dcb4003d8ed1a42fb1325f39485afe01c48d898",
-    "gap-register.json": "55f2c144db6b9c2ecd628a0afc31a49afffc09e562752c476d247d7b742d2ada",
+    "gap-register.json": "5c6d1ecd32010b9dec55b7b7ca27624a1ddc63a74045e7e13dec4752f96b2b15",
     "README.md": "0aecd819105ba4f7e4e0f7835a42b6028df1b937d8321131a9493ccf7a2f4eb8",
-    "reconciliation-log.md": "caa63fd8eb477f726c3f2c8ec125d4f5cc120930f749dc08b00666aebc9e853e",
+    "reconciliation-log.md": "c0cafa3f925ca022edc13575d968261e5f2856d5a6e943d947cc3dfbf70bcc01",
     "reconciliation.md": "3d0d2ffc6d1b5ba1999ba6a4b3a4952dd5ad34552e96164dfaaedecdccfe02ee",
     "reference/history/01-assisted-candidate-workflow.md": "c20d1b1647d47bb60368c96b74633a9bc6a701979594154f38ac32e678978e09",
     "reference/history/02-assistance-and-approval-contracts.md": "23e652349b4af44fb93f3b0b69a8579e6ecdeecbc8e63484e10d84ffe613a82b",
@@ -48,7 +48,8 @@
     "requirements.md": "a26bbf09b7c040f805a6df7f5ad4438d858dc9d00fa5e2e7b826a6953769c7c9",
     "review.md": "7c3703b923d663b9e4ac1c4237ba5b1587ffc774849557ebf75aaa96b9579f06",
     "verify.py": "34565cd55fb9a615d282115359a1dd1ecb93ed6c7065e1709f5f2cc5bd86d857",
-    "workflow-map.md": "d0bd01f8149d56bb702811d5766006044e8022522031eddd0c8ca8fbb1200c35"
+    "workflow-map.md": "d0bd01f8149d56bb702811d5766006044e8022522031eddd0c8ca8fbb1200c35",
+    "implementation-progress.md": "3d036578d049608c504543b741348e3a1aff2b4c1bfceeb91142b9fcf0e0fbda"
   },
   "last_updated": "2026-11-20"
 }
